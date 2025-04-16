@@ -1,0 +1,17 @@
+{
+  "name": "mr-e-tutor",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "start": "vercel start"
+  },
+  "dependencies": {
+    "@vercel/node": "34.0.0",
+    "@upstash/redis": "1.22.0",
+    "zod": "3.22.4"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
