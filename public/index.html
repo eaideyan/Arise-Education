@@ -1,164 +1,137 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Mr. E – Your AI Tutor 🇳🇬</title>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mr. E – Your AI Tutor NG</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: 'Nunito', sans-serif;
-      background-color: #f5f7fa;
-      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: #f0f4f8;
       display: flex;
       flex-direction: column;
       height: 100vh;
+      color: #333;
     }
-
     header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
       background-color: #2563eb;
-      color: white;
-      padding: 1rem;
+      color: #fff;
       text-align: center;
-      font-size: 1.5rem;
-      font-weight: 700;
-      letter-spacing: 0.5px;
+      padding: 1rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+      z-index: 10;
     }
-
     main#wrapper {
       flex: 1;
       display: flex;
       flex-direction: column;
+      margin-top: 4rem; /* header height */
+      margin-bottom: 5rem; /* input area height */
       align-items: center;
       padding: 1rem;
-      max-width: 720px; /* 1.5x increased width */
-      margin: 0 auto;
       width: 100%;
+      max-width: 600px; /* narrowed width */
+      margin-left: auto;
+      margin-right: auto;
     }
-
     #chat {
       flex: 1;
       width: 100%;
       overflow-y: auto;
-      padding: 1rem 0.5rem;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 1rem;
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
-      border: 1px solid #ddd;
-      border-radius: 16px;
-      background: #fff;
-      height: 65vh;
+      gap: 1rem;
     }
-
     .message-row {
       display: flex;
       align-items: flex-start;
     }
-
     .message-row.user {
       justify-content: flex-end;
     }
-
-    .avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      margin: 0 8px;
-      flex-shrink: 0;
-    }
-
-    .user .avatar {
-      background-color: #bae6fd;
-    }
-
-    .assistant .avatar {
-      background-image: url('https://cdn-icons-png.flaticon.com/512/1995/1995471.png');
-      background-size: cover;
-      background-position: center;
-    }
-
     .bubble {
       max-width: 75%;
       padding: 0.75rem 1rem;
       border-radius: 16px;
-      font-size: 1rem;
-      line-height: 1.5;
-      white-space: pre-wrap;
+      line-height: 1.4;
+      background: #e0e7ff;
+      font-size: 0.975rem;
+      word-wrap: break-word;
     }
-
     .bubble.user {
-      background-color: #c7f0d8;
-      border-bottom-right-radius: 0;
+      background: #d1fae5;
     }
-
-    .bubble.assistant {
-      background-color: #e0e7ff;
-      border-bottom-left-radius: 0;
-    }
-
-    form {
+    form#chat-form {
+      position: fixed;
+      bottom: 0;
+      left: 0;
       width: 100%;
       display: flex;
-      align-items: center;
-      margin-top: 1rem;
-      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: #fff;
+      border-top: 1px solid #ddd;
     }
-
-    textarea {
+    textarea#messageInput {
       flex: 1;
-      padding: 0.75rem 1rem;
-      font-size: 1rem;
-      border-radius: 12px;
-      border: 1px solid #ccc;
       resize: none;
-      max-height: 5.5rem; /* Around 3 lines */
-      min-height: 3.5rem;
-      overflow-y: auto;
-      line-height: 1.5rem;
-    }
-
-    button {
-      background-color: #2563eb;
-      color: white;
-      padding: 0.75rem 1.5rem;
+      padding: 0.75rem 1rem;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      font-family: 'Poppins', sans-serif;
       font-size: 1rem;
+      line-height: 1.4;
+      max-height: 4.5rem;
+      min-height: 3rem;
+      overflow-y: auto;
+      color: #333;
+    }
+    textarea#messageInput::placeholder {
+      color: #999;
+    }
+    button {
+      margin-left: 0.75rem;
+      background-color: #2563eb;
+      color: #fff;
       border: none;
       border-radius: 12px;
+      padding: 0 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
       cursor: pointer;
+      transition: background 0.3s ease;
     }
-
     button:hover {
       background-color: #1e40af;
     }
-
     @media (max-width: 600px) {
-      main#wrapper {
-        max-width: 100%;
-        padding: 0.5rem;
-      }
-
-      .bubble {
-        max-width: 85%;
-      }
+      main#wrapper { max-width: 100%; padding: 0.5rem; }
+      .bubble { max-width: 85%; }
     }
   </style>
 </head>
 <body>
-
-  <header>Mr. E – Your AI Tutor 🇳🇬</header>
+  <header>Mr. E – Your AI Tutor NG</header>
 
   <main id="wrapper">
     <div id="chat"></div>
-
-    <form id="chat-form">
-      <textarea id="messageInput" placeholder="Type your message..." required></textarea>
-      <button type="submit">Send</button>
-    </form>
   </main>
+
+  <form id="chat-form">
+    <textarea id="messageInput" placeholder="Type your message..." required></textarea>
+    <button type="submit">Send</button>
+  </form>
 
   <script>
     const chatBox = document.getElementById('chat');
@@ -169,22 +142,11 @@
     function addMessage(content, role) {
       const row = document.createElement('div');
       row.className = `message-row ${role}`;
-
-      const avatar = document.createElement('div');
-      avatar.className = `avatar ${role}`;
-
       const bubble = document.createElement('div');
-      bubble.className = `bubble ${role}`;
-      bubble.textContent = content;
-
-      if (role === 'assistant') {
-        row.appendChild(avatar);
-        row.appendChild(bubble);
-      } else {
-        row.appendChild(bubble);
-        row.appendChild(avatar);
-      }
-
+      bubble.className = 'bubble ' + role;
+      bubble.innerText = content;
+      if (role === 'assistant') row.appendChild(bubble);
+      if (role === 'user') row.appendChild(bubble);
       chatBox.appendChild(row);
       chatBox.scrollTop = chatBox.scrollHeight;
     }
@@ -192,39 +154,30 @@
     async function sendMessage(message) {
       conversation.push({ role: 'user', content: message });
       addMessage(message, 'user');
-
+      input.value = '';
       try {
         const res = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ conversation })
         });
-
         const data = await res.json();
         const reply = data.message;
-
         conversation.push({ role: 'assistant', content: reply });
         addMessage(reply, 'assistant');
       } catch (err) {
-        addMessage("⚠️ Something went wrong. Please try again later.", 'assistant');
+        addMessage('⚠️ Something went wrong.', 'assistant');
       }
     }
 
-    // Trigger intro on page load
-    window.onload = () => {
-      const intro = "Hello";
-      conversation.push({ role: 'user', content: intro });
-      sendMessage(intro);
-    };
-
-    form.addEventListener('submit', (e) => {
+    window.onload = () => sendMessage('Hello');
+    form.addEventListener('submit', e => {
       e.preventDefault();
-      const message = input.value.trim();
-      if (!message) return;
-      input.value = '';
-      sendMessage(message);
+      const msg = input.value.trim();
+      if (!msg) return;
+      sendMessage(msg);
     });
   </script>
-
 </body>
 </html>
+```
