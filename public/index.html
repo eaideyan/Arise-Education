@@ -2,117 +2,81 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Mr. E – Your AI Tutor NG</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; margin:0; padding:0 }
     body {
-      font-family: 'Poppins', sans-serif;
-      background-color: #f0f4f8;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      color: #333;
+      font-family:'Poppins',sans-serif;
+      background:#f0f4f8;
+      display:flex; flex-direction:column;
+      height:100vh; color:#333;
     }
     header {
-      position: fixed;
-      top: 0; left: 0; width: 100%;
-      background-color: #2563eb;
-      color: #fff;
-      text-align: center;
-      padding: 1rem;
-      font-size: 1.25rem;
-      font-weight: 600;
-      z-index: 10;
+      position:fixed; top:0; left:0; width:100%;
+      background:#2563eb; color:#fff;
+      text-align:center; padding:1rem;
+      font-size:1.25rem; font-weight:600;
+      z-index:10;
     }
     main#wrapper {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      margin-top: 4rem;
-      margin-bottom: 6rem;
-      align-items: center;
-      padding: 1rem;
-      width: 100%;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
+      flex:1;
+      display:flex; flex-direction:column;
+      margin-top:4rem;    /* header height */
+      margin-bottom:4rem; /* smaller bottom gap */
+      align-items:center; padding:1rem;
+      width:100%; max-width:600px;
+      margin-left:auto; margin-right:auto;
     }
     #chat {
-      flex: 1;
-      width: 100%;
-      overflow-y: auto;
-      background: #fff;
-      border: 1px solid #ddd;
-      border-top-left-radius: 24px;
-      border-top-right-radius: 24px;
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
+      flex:1; width:100%; overflow-y:auto;
+      background:#fff; border:1px solid #ddd;
+      border-radius:24px;  /* round all corners */
+      padding:1rem; display:flex;
+      flex-direction:column; gap:1rem;
     }
-    .message-row { display: flex; align-items: flex-start; }
-    .message-row.user { justify-content: flex-end; }
+    .message-row { display:flex; align-items:flex-start; }
+    .message-row.user { justify-content:flex-end; }
     .bubble {
-      max-width: 75%;
-      padding: 0.75rem 1rem;
-      border-radius: 24px;
-      line-height: 1.4;
-      background: #e0e7ff;
-      font-size: 0.975rem;
-      word-wrap: break-word;
+      max-width:75%; padding:.75rem 1rem;
+      border-radius:24px; /* round bubbles */
+      line-height:1.4; background:#e0e7ff;
+      font-size:.975rem; word-wrap:break-word;
     }
-    .bubble.user { background: #d1fae5; }
+    .bubble.user { background:#d1fae5 }
 
-    /* Input area wrapper */
     .input-wrapper {
-      position: fixed;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100%;
-      max-width: 600px;
-      padding: 0.5rem 1rem;
-      background: #fff;
-      border: 1px solid #ddd;
-      border-bottom-left-radius: 24px;
-      border-bottom-right-radius: 24px;
-      display: flex;
-      gap: 0.25rem;
-      z-index: 10;
+      position:fixed; bottom:0;
+      left:50%; transform:translateX(-50%);
+      width:100%; max-width:600px;
+      background:#fff; border:1px solid #ddd;
+      border-radius:24px; /* round all corners */
+      display:flex; gap:.25rem;
+      padding:.5rem 1rem; z-index:10;
     }
     textarea#messageInput {
-      flex: 1;
-      resize: none;
-      padding: 0.75rem 1rem;
-      border: 1px solid #ccc;
-      border-radius: 24px;
-      font-family: 'Poppins', sans-serif;
-      font-size: 1rem;
-      line-height: 1.4;
-      max-height: 4.5rem;
-      min-height: 3rem;
-      overflow-y: auto;
-      color: #333;
+      flex:1; resize:none;
+      padding:.75rem 1rem; border:1px solid #ccc;
+      border-radius:24px; /* also rounded */
+      font-family:'Poppins',sans-serif;
+      font-size:1rem; line-height:1.4;
+      max-height:4.5rem; min-height:3rem;
+      overflow-y:auto; color:#333;
     }
-    textarea#messageInput::placeholder { color: #999; }
+    textarea#messageInput::placeholder { color:#999 }
     button {
-      background-color: #2563eb;
-      color: #fff;
-      border: none;
-      border-radius: 24px;
-      padding: 0 1.5rem;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.3s ease;
+      background:#2563eb; color:#fff;
+      border:none; border-radius:24px; /* round */
+      padding:0 1.5rem; font-size:1rem;
+      font-weight:600; cursor:pointer;
+      transition:background .3s ease;
     }
-    button:hover { background-color: #1e40af; }
+    button:hover { background:#1e40af }
 
-    @media (max-width: 600px) {
-      main#wrapper { max-width: 100%; padding: 0.5rem; }
-      .bubble { max-width: 85%; }
+    @media(max-width:600px) {
+      main#wrapper { max-width:100%; padding:.5rem; }
+      .bubble { max-width:85%; }
     }
   </style>
 </head>
@@ -135,46 +99,46 @@
     const sendBtn = document.getElementById('sendBtn');
     let conversation = [];
 
-    function addMessage(content, role) {
+    function addMessage(text, role) {
       const row = document.createElement('div');
       row.className = `message-row ${role}`;
       const bubble = document.createElement('div');
       bubble.className = `bubble ${role}`;
-      bubble.innerText = content;
+      bubble.innerText = text;
       row.appendChild(bubble);
       chatBox.appendChild(row);
       chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    async function sendMessage(message) {
-      conversation.push({ role: 'user', content: message });
-      addMessage(message, 'user');
+    async function sendMessage(msg) {
+      conversation.push({ role:'user', content: msg });
+      addMessage(msg, 'user');
       input.value = '';
       try {
         const res = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
           body: JSON.stringify({ conversation })
         });
-        const data = await res.json();
-        const reply = data.message;
-        conversation.push({ role: 'assistant', content: reply });
-        addMessage(reply, 'assistant');
+        const { message } = await res.json();
+        conversation.push({ role:'assistant', content: message });
+        addMessage(message, 'assistant');
       } catch {
         addMessage('⚠️ Something went wrong.', 'assistant');
       }
     }
 
     function handleSend() {
-      const msg = input.value.trim();
-      if (msg) sendMessage(msg);
+      const text = input.value.trim();
+      if (!text) return;
+      sendMessage(text);
     }
 
     window.onload = () => sendMessage('Hello');
     sendBtn.addEventListener('click', handleSend);
     input.addEventListener('keypress', e => {
       if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
+        e.preventDefault() ;
         handleSend();
       }
     });
