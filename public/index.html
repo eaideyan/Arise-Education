@@ -5,7 +5,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mr. E – Your AI Tutor NG</title>
-  <!-- Google Font -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -39,7 +38,7 @@
       align-items: center;
       padding: 1rem;
       width: 100%;
-      max-width: 720px;
+      max-width: 600px; /* narrowed width */
       margin-left: auto;
       margin-right: auto;
     }
@@ -69,6 +68,7 @@
       line-height: 1.4;
       background: #e0e7ff;
       font-size: 0.975rem;
+      word-wrap: break-word;
     }
     .bubble.user {
       background: #d1fae5;
@@ -93,8 +93,12 @@
       font-size: 1rem;
       line-height: 1.4;
       max-height: 4.5rem;
-      min-height: 2.5rem;
+      min-height: 3rem;
       overflow-y: auto;
+      color: #333;
+    }
+    textarea#messageInput::placeholder {
+      color: #999;
     }
     button {
       margin-left: 0.75rem;
@@ -110,6 +114,10 @@
     }
     button:hover {
       background-color: #1e40af;
+    }
+    @media (max-width: 600px) {
+      main#wrapper { max-width: 100%; padding: 0.5rem; }
+      .bubble { max-width: 85%; }
     }
   </style>
 </head>
@@ -137,10 +145,8 @@
       const bubble = document.createElement('div');
       bubble.className = 'bubble ' + role;
       bubble.innerText = content;
-      role === 'assistant' ? row.appendChild(bubble) : null;
+      if (role === 'assistant') row.appendChild(bubble);
       if (role === 'user') row.appendChild(bubble);
-      if (role === 'assistant') row.style.justifyContent = 'flex-start';
-      if (role === 'user') row.style.justifyContent = 'flex-end';
       chatBox.appendChild(row);
       chatBox.scrollTop = chatBox.scrollHeight;
     }
