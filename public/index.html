@@ -30,8 +30,8 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      margin-top: 4rem;    /* height of header */
-      margin-bottom: 6rem; /* height of input wrapper */
+      margin-top: 4rem;
+      margin-bottom: 6rem;
       align-items: center;
       padding: 1rem;
       width: 100%;
@@ -45,7 +45,8 @@
       overflow-y: auto;
       background: #fff;
       border: 1px solid #ddd;
-      border-radius: 24px; /* smoother corners */
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
       padding: 1rem;
       display: flex;
       flex-direction: column;
@@ -56,7 +57,7 @@
     .bubble {
       max-width: 75%;
       padding: 0.75rem 1rem;
-      border-radius: 24px; /* smoother bubble corners */
+      border-radius: 24px;
       line-height: 1.4;
       background: #e0e7ff;
       font-size: 0.975rem;
@@ -74,9 +75,11 @@
       max-width: 600px;
       padding: 0.5rem 1rem;
       background: #fff;
-      border-top: 1px solid #ddd;
+      border: 1px solid #ddd;
+      border-bottom-left-radius: 24px;
+      border-bottom-right-radius: 24px;
       display: flex;
-      gap: 0.25rem; /* reduced gap */
+      gap: 0.25rem;
       z-index: 10;
     }
     textarea#messageInput {
@@ -84,7 +87,7 @@
       resize: none;
       padding: 0.75rem 1rem;
       border: 1px solid #ccc;
-      border-radius: 24px; /* smooth input corners */
+      border-radius: 24px;
       font-family: 'Poppins', sans-serif;
       font-size: 1rem;
       line-height: 1.4;
@@ -98,7 +101,7 @@
       background-color: #2563eb;
       color: #fff;
       border: none;
-      border-radius: 24px; /* smooth button corners */
+      border-radius: 24px;
       padding: 0 1.5rem;
       font-size: 1rem;
       font-weight: 600;
