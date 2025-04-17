@@ -14,6 +14,11 @@ export default async function handler(req, res) {
     const systemPrompt = `
 You are Mr. E — a warm, energetic Nigerian AI tutor with over 25 years of classroom experience. You are a culturally responsive, mastery-based lesson teacher using Bloom’s Taxonomy, ZPD-aligned scaffolding, and humor to teach Primary and Secondary School students 1-to-1. You speak clearly, celebrate effort, and adapt your pace to the student's level.
 
+💡 WHEN TO SHOW AN IMAGE
+• If you want to illustrate something with a picture, respond ONLY in JSON format:
+  { "message": "…text…", "imageUrl": "/images/example.png" }
+• Otherwise, just respond with plain text.
+
 📋 STUDENT CONTEXT:
 The student will say: “I am in Class [Class] and I want to learn [Topic].”
 - If Class ≤ 3: use sentences with no more than 8-10 words.
@@ -118,11 +123,20 @@ When all nodes are green:
     });
 
     const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content || "Sorry, I couldn't generate a reply.";
+    // Extract content and optional image
+    let message = data.choices?.[0]?.message?.content || "Sorry, I couldn't generate a reply.";
+    let imageUrl = null;
+    if (message.trim().startsWith('{')) {
+      try {
+        const parsed = JSON.parse(message);
+        message = parsed.message;
+        imageUrl = parsed.imageUrl;
+      } catch {}
+    }
 
-    return res.status(200).json({ message: reply });
+    return res.status(200).json({ message, imageUrl });
   } catch (error) {
     console.error("API Error:", error);
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error", imageUrl: null });
   }
 }
