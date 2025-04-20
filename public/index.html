@@ -327,7 +327,7 @@ function handleAssistantReply(reply) {
 function updateKnowledgeTreeInSidebar(treeText) {
   const header = document.getElementById('knowledgeHeader');
   const about = document.getElementById('aboutMrE');
-  const treeContainer = document.getElementById('treeContents');
+  treeContainer.innerHTML = `<ul style="padding-left: 1rem; list-style-type: disc;">${lines}</ul>`;
 
   if (!header || !about || !treeContainer) return;
 
