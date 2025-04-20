@@ -112,38 +112,42 @@ export default async function handler(req, res) {
   }
 
   const { conversation } = req.body;
-  const history = [...(conversation || [])];
 
-  const hasSystemPrompt = history.some(m => m.role === 'system');
-  if (!hasSystemPrompt) {
-    history.unshift({ role: 'system', content: SYSTEM_PROMPT });
+  if (!process.env.GEMINI_API_KEY) {
+    return res.status(500).json({ message: 'GEMINI_API_KEY not configured in environment variables.' });
   }
 
+  const messages = [...(conversation || [])];
+
+  // Convert OpenAI format to Gemini format
+  const formattedMessages = messages.map(m => ({
+    role: m.role === 'system' ? 'user' : m.role,
+    parts: [{ text: m.content }]
+  }));
+
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        'x-goog-api-key': process.env.GEMINI_API_KEY
       },
       body: JSON.stringify({
-        model: 'gpt-4',
-        messages: history,
-        temperature: 0.5,
-      }),
+        contents: formattedMessages
+      })
     });
 
     const data = await response.json();
 
-    if (!response.ok) {
-      console.error("OpenAI API Error:", await response.text());
-      return res.status(500).json({ message: "OpenAI response failed." });
+    if (!response.ok || !data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+      console.error('Gemini API Error:', data);
+      return res.status(500).json({ message: 'Gemini response failed.' });
     }
 
-    const reply = data.choices?.[0]?.message?.content?.trim() || "Sorry, I couldn't generate a reply.";
+    const reply = data.candidates[0].content.parts[0].text.trim();
     return res.status(200).json({ message: reply });
   } catch (error) {
-    console.error("API Error:", error);
-    return res.status(500).json({ message: "Internal server error" });
+    console.error('Gemini Server Error:', error);
+    return res.status(500).json({ message: 'Internal server error' });
   }
 }
