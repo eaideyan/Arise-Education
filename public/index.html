@@ -314,12 +314,12 @@ function handleAssistantReply(reply) {
   addMessage(reply, 'assistant');
   speak(reply);
 
-  const treeStart = reply.indexOf('Knowledge Tree:');
-  if (treeStart !== -1) {
-    const subTree = reply.slice(treeStart).split('\n').slice(1, 6).join('\n');
-    updateKnowledgeTreeInSidebar(subTree);
-    updateProgressBar(); // reset to 0
-  }
+const treeLines = reply.split('\n').filter(line => /^\d/.test(line.trim()));
+if (treeLines.length > 0) {
+  const treeText = treeLines.join('\n');
+  updateKnowledgeTreeInSidebar(treeText);
+  updateProgressBar(); // reset to 0
+}
 
   updateProgressBarFromMessage(reply); // update dynamically later
 }
