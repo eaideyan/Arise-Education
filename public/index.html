@@ -353,14 +353,14 @@ function updateProgressBar(state = '⬜⬜⬜⬜⬜', count = 0) {
   const feedbackEl = document.getElementById('progressFeedback');
 
   if (progressEl) {
-    progressEl.textContent = `🧠 Progress: ${state} (${count}/5 mastered!)`;
+    progressEl.textContent = `🧠 Progress: ${state} (${count}/${state.length} mastered!)`;
   }
 
   if (feedbackEl) {
     feedbackEl.textContent =
       count === 0
         ? "Let's begin your learning journey! 🚀"
-        : count === 5
+        : count === state.length
         ? "Woohoo! 🎉 You've completed the topic!"
         : "Great job! Keep going, you're doing well! 🌟";
   }
