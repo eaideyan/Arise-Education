@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Mr. E – Your AI Tutor 🇳🇬</title>
+  <title>Gov. Umo Eno – Your AI Tutor 🇳🇬</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; }
@@ -195,7 +195,7 @@
   </div>
 </header>
   <div id="speakToggleWrapper">
-    <label><input type="checkbox" id="speakToggle"> 🔊 Mr. E Speaks</label>
+    <label><input type="checkbox" id="speakToggle"> 🔊 Gov. Umo Eno Speaks</label>
   </div>
 
   <main id="wrapper">
@@ -286,7 +286,7 @@
       conversation.push({ role: 'user', content: message });
       addMessage(message, 'user');
 
-      thinkingRow = addMessage('💭 Mr. E is thinking...', 'assistant');
+      thinkingRow = addMessage('💭 Gov. is thinking...', 'assistant');
 
       try {
         const res = await fetch('/api/chat', {
