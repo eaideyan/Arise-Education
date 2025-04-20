@@ -314,39 +314,37 @@ function handleAssistantReply(reply) {
   addMessage(reply, 'assistant');
   speak(reply);
 
-const treeLines = reply.split('\n').filter(line => /^\d/.test(line.trim()));
-if (treeLines.length > 0) {
-  const treeText = treeLines.join('\n');
-  updateKnowledgeTreeInSidebar(treeText);
-  updateProgressBar(); // reset to 0
-}
+  const treeStart = reply.indexOf('Knowledge Tree:');
+  if (treeStart !== -1) {
+    const treeSection = reply.slice(treeStart).split('\n').slice(1); // all lines after "Knowledge Tree:"
+    const numberedLines = treeSection.filter(line => /^\d+[\.\)]/.test(line.trim()));
+    if (numberedLines.length >= 3) {
+      updateKnowledgeTreeInSidebar(numberedLines.join('\n'));
+      updateProgressBar('⬜'.repeat(numberedLines.length), 0);
+    }
+  }
 
-  updateProgressBarFromMessage(reply); // update dynamically later
+  updateProgressBarFromMessage(reply);
 }
 
 function updateKnowledgeTreeInSidebar(treeText) {
   const header = document.getElementById('knowledgeHeader');
   const about = document.getElementById('aboutMrE');
-  treeContainer.innerHTML = `<ul style="padding-left: 1rem; list-style-type: disc;">${lines}</ul>`;
+  const treeContainer = document.getElementById('treeContents');
 
   if (!header || !about || !treeContainer) return;
 
   const lines = treeText
     .split('\n')
-    .filter(line => /^\d\./.test(line.trim()))
-    .map(line => `<li>${line.trim()}</li>`)
+    .filter(line => /^\d+\./.test(line.trim()))
+    .map(line => `<li>${line.trim().replace(/^\d+\.\s*/, '')}</li>`)
     .join('');
 
   if (lines) {
-    // Show the tree title and hide the intro
     header.style.display = 'block';
     about.style.display = 'none';
-
-    // Add the ordered list to the tree container
     treeContainer.innerHTML = `<ol style="padding-left: 1rem;">${lines}</ol>`;
-
-    // Reset progress bar to empty
-    updateProgressBar(); 
+    updateProgressBar(); // reset progress
   }
 }
 
