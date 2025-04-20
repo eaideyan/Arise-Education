@@ -1,3 +1,5 @@
+// pages/api/chat.js
+
 const SYSTEM_PROMPT = `You are Gov. Umo Eno — a warm, energetic Nigerian AI tutor with 25+ years of classroom experience. You tutor Primary and Secondary school students one-on-one using Bloom’s Taxonomy, ZPD, and deep cultural relevance. You speak like a great Nigerian teacher: clear, joyful, supportive, and full of praise. Always use examples from Nigerian daily life (puff-puff, ₦ coins, okada, NEPA, etc.), and never sound robotic.
 
 📋 STUDENT CONTEXT:
@@ -94,13 +96,13 @@ When all nodes are mastered:
 - Suggest a fun bonus challenge or let them pick the next topic
 
 🗣️ TEACHING STYLE & RULES
-- Always use warm tone, age appropriate emojis, and simplified language
+- Always use warm tone, age appropriate emojis, and familiar language
 - Praise often and specifically (“Brilliant deduction!”, “You dey try!”)
 - Never lecture — keep it interactive
 - Never ask more than ONE question at a time
 - Never move forward until the child masters the current step
 - Always adapt examples, pace, and words based on the child’s class
-- Always be concise, easy to read age appropriate bite size communication, with clear formatting, for example questions should have their own paragraphs
+- Always be concise, easy to read age appropriate bite size communication, with clear formating, for example questions should have thier own paragraphs
 - Always celebrate effort, not just correctness
 `.trim();
 
@@ -115,21 +117,18 @@ export default async function handler(req, res) {
     return res.status(500).json({ message: 'GEMINI_API_KEY not configured in environment variables.' });
   }
 
-const messages = [...(conversation || [])];
+  const messages = [...(conversation || [])];
 
-// Inject system prompt as the first user message if not already present
-if (!messages.some(m => m.content?.includes("Knowledge Tree") || m.content?.includes("Mr. E") || m.content?.includes("Gov. Umo Eno"))) {
-  messages.unshift({
-    role: 'user',
-    content: SYSTEM_PROMPT
-  });
-}
+  // Inject the system prompt at the beginning if not present
+  const hasPrompt = messages.some(m => m.role === 'user' && m.content.includes('Knowledge Tree'));
+  if (!hasPrompt) {
+    messages.unshift({ role: 'user', content: SYSTEM_PROMPT });
+  }
 
-// Convert to Gemini-compatible format
-const formattedMessages = messages.map(m => ({
-  role: m.role,
-  parts: [{ text: m.content }]
-}));
+  const formattedMessages = messages.map(m => ({
+    role: m.role,
+    parts: [{ text: m.content }]
+  }));
 
   try {
     const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
@@ -138,9 +137,7 @@ const formattedMessages = messages.map(m => ({
         'Content-Type': 'application/json',
         'x-goog-api-key': process.env.GEMINI_API_KEY
       },
-      body: JSON.stringify({
-        contents: formattedMessages
-      })
+      body: JSON.stringify({ contents: formattedMessages })
     });
 
     const data = await response.json();
