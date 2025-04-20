@@ -261,7 +261,9 @@
       avatar.className = `avatar ${role}`;
       const bubble = document.createElement('div');
       bubble.className = `bubble ${role}`;
-      bubble.textContent = content;
+      bubble.innerHTML = content
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // bold
+        .replace(/\*(.*?)\*/g, '<em>$1</em>');             // italic
       if (role === 'user') bubble.setAttribute('data-name', studentName || '');
       row.appendChild(role === 'assistant' ? avatar : bubble);
       row.appendChild(role === 'assistant' ? bubble : avatar);
