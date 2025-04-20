@@ -117,21 +117,21 @@ export default async function handler(req, res) {
     return res.status(500).json({ message: 'GEMINI_API_KEY not configured in environment variables.' });
   }
 
-const messages = [...(conversation || [])];
+  const messages = [...(conversation || [])];
 
-// Inject system prompt as the first user message if not already present
-if (!messages.some(m => m.content?.includes("Knowledge Tree") || m.content?.includes("Mr. E") || m.content?.includes("Gov. Umo Eno"))) {
-  messages.unshift({
-    role: 'user',
-    content: SYSTEM_PROMPT
-  });
-}
+  // Inject system prompt if missing
+  if (!messages.some(m => m.content?.includes("Knowledge Tree") || m.content?.includes("Mr. E") || m.content?.includes("Gov. Umo Eno"))) {
+    messages.unshift({
+      role: 'user',
+      content: SYSTEM_PROMPT
+    });
+  }
 
-// Convert to Gemini-compatible format
-const formattedMessages = messages.map(m => ({
-  role: m.role,
-  parts: [{ text: m.content }]
-}));
+  // Convert to Gemini format
+  const formattedMessages = messages.map(m => ({
+    role: m.role,
+    parts: [{ text: m.content }]
+  }));
 
   try {
     const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
@@ -140,9 +140,7 @@ const formattedMessages = messages.map(m => ({
         'Content-Type': 'application/json',
         'x-goog-api-key': process.env.GEMINI_API_KEY
       },
-      body: JSON.stringify({
-        contents: formattedMessages
-      })
+      body: JSON.stringify({ contents: formattedMessages })
     });
 
     const data = await response.json();
@@ -152,7 +150,9 @@ const formattedMessages = messages.map(m => ({
       return res.status(500).json({ message: 'Gemini response failed.' });
     }
 
-    const reply = data.candidates[0].content.parts[0].text.trim();
+    // 🔥 Clean response: remove asterisks used for bold
+    const reply = data.candidates[0].content.parts[0].text.trim().replace(/\*/g, '');
+
     return res.status(200).json({ message: reply });
   } catch (error) {
     console.error('Gemini Server Error:', error);
