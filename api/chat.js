@@ -1,6 +1,6 @@
 // pages/api/chat.js
 
-const SYSTEM_PROMPT = `You are Gov. Umo Eno — a warm, energetic Nigerian AI tutor with 25+ years of classroom experience. You tutor Primary and Secondary school students one-on-one using Bloom’s Taxonomy, ZPD, and deep cultural relevance. You speak like a great Nigerian teacher: clear, joyful, supportive, and full of praise. Always use examples from Nigerian daily life (puff-puff, ₦ coins, okada, NEPA, etc.), and never sound robotic.
+const SYSTEM_PROMPT = You are Gov. Umo Eno — a warm, energetic Nigerian AI tutor with 25+ years of classroom experience. You tutor Primary and Secondary school students one-on-one using Bloom’s Taxonomy, ZPD, and deep cultural relevance. You speak like a great Nigerian teacher: clear, joyful, supportive, and full of praise. Always use examples from Nigerian daily life (puff-puff, ₦ coins, okada, NEPA, etc.), and never sound robotic.
 
 📋 STUDENT CONTEXT:
 When the student says: “I am in Class [Class] and I want to learn [Topic]”:
@@ -104,7 +104,7 @@ When all nodes are mastered:
 - Always adapt examples, pace, and words based on the child’s class
 - Always be concise, easy to read age appropriate bite size communication, with clear formating, for example questions should have thier own paragraphs
 - Always celebrate effort, not just correctness
-`.trim();
+.trim();
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -117,21 +117,21 @@ export default async function handler(req, res) {
     return res.status(500).json({ message: 'GEMINI_API_KEY not configured in environment variables.' });
   }
 
-  const messages = [...(conversation || [])];
+const messages = [...(conversation || [])];
 
-  // Inject system prompt if missing
-  if (!messages.some(m => m.content?.includes("Knowledge Tree") || m.content?.includes("Mr. E") || m.content?.includes("Gov. Umo Eno"))) {
-    messages.unshift({
-      role: 'user',
-      content: SYSTEM_PROMPT
-    });
-  }
+// Inject system prompt as the first user message if not already present
+if (!messages.some(m => m.content?.includes("Knowledge Tree") || m.content?.includes("Mr. E") || m.content?.includes("Gov. Umo Eno"))) {
+  messages.unshift({
+    role: 'user',
+    content: SYSTEM_PROMPT
+  });
+}
 
-  // Convert to Gemini format
-  const formattedMessages = messages.map(m => ({
-    role: m.role,
-    parts: [{ text: m.content }]
-  }));
+// Convert to Gemini-compatible format
+const formattedMessages = messages.map(m => ({
+  role: m.role,
+  parts: [{ text: m.content }]
+}));
 
   try {
     const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
@@ -140,7 +140,9 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
         'x-goog-api-key': process.env.GEMINI_API_KEY
       },
-      body: JSON.stringify({ contents: formattedMessages })
+      body: JSON.stringify({
+        contents: formattedMessages
+      })
     });
 
     const data = await response.json();
@@ -150,9 +152,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ message: 'Gemini response failed.' });
     }
 
-    // 🔥 Clean response: remove asterisks used for bold
-    const reply = data.candidates[0].content.parts[0].text.trim().replace(/\*/g, '');
-
+    const reply = data.candidates[0].content.parts[0].text.trim();
     return res.status(200).json({ message: reply });
   } catch (error) {
     console.error('Gemini Server Error:', error);
