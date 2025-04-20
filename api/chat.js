@@ -117,13 +117,21 @@ export default async function handler(req, res) {
     return res.status(500).json({ message: 'GEMINI_API_KEY not configured in environment variables.' });
   }
 
-  const messages = [...(conversation || [])];
+const messages = [...(conversation || [])];
 
-  // Convert OpenAI format to Gemini format
-  const formattedMessages = messages.map(m => ({
-    role: m.role === 'system' ? 'user' : m.role,
-    parts: [{ text: m.content }]
-  }));
+// Inject system prompt as the first user message if not already present
+if (!messages.some(m => m.content?.includes("Knowledge Tree") || m.content?.includes("Mr. E") || m.content?.includes("Gov. Umo Eno"))) {
+  messages.unshift({
+    role: 'user',
+    content: SYSTEM_PROMPT
+  });
+}
+
+// Convert to Gemini-compatible format
+const formattedMessages = messages.map(m => ({
+  role: m.role,
+  parts: [{ text: m.content }]
+}));
 
   try {
     const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
