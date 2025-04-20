@@ -367,10 +367,10 @@ function updateProgressBar(state = '⬜⬜⬜⬜⬜', count = 0) {
 }
 
 function updateProgressBarFromMessage(message) {
-  const match = message.match(/🧠 Progress: (.*?) \((\d+)\/5 mastered!\)/);
+  const match = message.match(/🧠 Progress: (.*?) \((\d+)\/(\d+) mastered!\)/);
   if (!match) return;
-  const [_, state, count] = match;
-  updateProgressBar(state, parseInt(count));
+  const [_, state, count, total] = match;
+updateProgressBar(state, parseInt(count));
 }
 
     // ----- Load Initial Prompt -----
