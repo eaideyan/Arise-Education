@@ -85,6 +85,17 @@
       aside,#visuals{display:none}
       main#wrapper{flex-direction:column;align-items:stretch;padding:1rem}
     }
+
+    /* ---------- Lightweight 🎉 sprinkle ---------- */
+    @keyframes floatUp{
+      0%{opacity:1;transform:translate(-50%,0)}
+      100%{opacity:0;transform:translate(-50%,-140px)}
+    }
+    #cssConfetti{
+      position:fixed;left:50%;bottom:60px;z-index:9999;
+      font-size:2.6rem;pointer-events:none;
+      animation:floatUp 1.3s ease-out forwards
+    }
   </style>
 </head>
 <body>
@@ -109,8 +120,7 @@
           <p><strong>I am Gov. Umo Eno AI</strong></p>
           <p>Your friendly AI tutor! 🌟<br>
              I’ll help you learn one step at a time. Feel free to interrupt,<br>
-             ask questions and clarification. Remember this space belongs<br>
-             to you and me — no stress, let’s start!</p>
+             ask questions and clarify. This space is ours—so relax &amp; learn!</p>
           <p><strong>Abasi Sosong O!</strong></p>
         </div>
 
@@ -157,6 +167,15 @@
     let studentName  = '';
     let thinkingRow  = null;
 
+    /* ---------- Sprinkle helper ---------- */
+    function burstConfetti(){
+      const el=document.createElement('div');
+      el.id='cssConfetti';
+      el.textContent='🎉';
+      document.body.appendChild(el);
+      setTimeout(()=>el.remove(),1400);
+    }
+
     /* ---------- Chat helpers ---------- */
     function addMessage(content, role) {
       const row     = document.createElement('div');
@@ -187,72 +206,69 @@
       speechSynthesis.speak(u);
     }
 
-    /* ---------- Progress‑bar helpers (FIXED) ---------- */
-    function updateProgressBar(state='⬜', mastered=0, total=undefined) {
-      if(total===undefined){ total = (state.match(/🟢|🟧|⬜/g)||[]).length; }
+    /* ---------- Progress‑bar helpers ---------- */
+    function updateProgressBar(state='⬜', mastered=0, total){
+      if(total===undefined) total=(state.match(/🟢|🟧|⬜/g)||[]).length;
+      document.getElementById('progressVisual').textContent =
+        `🧠 Progress: ${state} (${mastered}/${total} mastered!)`;
 
-      const bar  = document.getElementById('progressVisual');
-      const feed = document.getElementById('progressFeedback');
-
-      if(bar)  bar.textContent  = `🧠 Progress: ${state} (${mastered}/${total} mastered!)`;
-      if(feed) feed.textContent =
-        mastered === 0        ? "Let's begin your learning journey! 🚀" :
-        mastered === total    ? "Woohoo! 🎉 You've completed the topic!" :
-                                "Great job! Keep going, you're doing well! 🌟";
+      document.getElementById('progressFeedback').textContent =
+        mastered===0     ? "Let's begin your learning journey! 🚀" :
+        mastered===total ? "Woohoo! 🎉 You've completed the topic!" :
+                           "Great job! Keep going, you're doing well! 🌟";
     }
 
     function updateProgressBarFromMessage(msg){
       const m = msg.match(/🧠 Progress:\s*(.*?)\s*\((\d+)\/(\d+)\s+mastered!\)/);
-      if(!m) return;
-      const [, state, mastered, total] = m;
-      updateProgressBar(state, +mastered, +total);
+      if(m){
+        const[,state,done,total]=m;
+        return updateProgressBar(state,+done,+total);
+      }
+      // Final mastery fallback
+      if(/You\s+MASTERED/i.test(msg)){
+        burstConfetti();
+        const bar=document.getElementById('progressVisual').textContent;
+        const total=+(bar.match(/\d+\/(\d+)/)||[,'0'])[1];
+        if(total) updateProgressBar('🟢'.repeat(total), total, total);
+      }
     }
 
     function updateKnowledgeTreeInSidebar(treeText){
-      const header = document.getElementById('knowledgeHeader');
-      const about  = document.getElementById('aboutMrE');
-      const tree   = document.getElementById('treeContents');
+      const header=document.getElementById('knowledgeHeader');
+      const about =document.getElementById('aboutMrE');
+      const tree  =document.getElementById('treeContents');
 
-      const numbered = treeText
-        .split('\n')
-        .filter(l => /^\d+\./.test(l.trim()));
-
-      if(numbered.length){
-        header.style.display='block';
-        about.style.display  ='none';
-
-        tree.innerHTML='<ol style="padding-left:1rem;">' +
-          numbered.map(l=>`<li>${l.trim().replace(/^\d+\.\s*/,'')}</li>`).join('') +
-        '</ol>';
-
-        updateProgressBar('⬜'.repeat(numbered.length), 0, numbered.length);
+      const lines=treeText.split('\n').filter(l=>/^\d+\./.test(l.trim()));
+      if(lines.length){
+        header.style.display='block'; about.style.display='none';
+        tree.innerHTML='<ol style="padding-left:1rem;">'+
+          lines.map(l=>`<li>${l.trim().replace(/^\d+\.\s*/,'')}</li>`).join('')+
+          '</ol>';
+        updateProgressBar('⬜'.repeat(lines.length),0,lines.length);
       }
     }
 
     /* ---------- Handle AI reply ---------- */
     function handleAssistantReply(reply){
-      addMessage(reply,'assistant');
-      speak(reply);
+      addMessage(reply,'assistant'); speak(reply);
 
-      // Tree extraction
-      const treeStart = reply.indexOf('Knowledge Tree:');
-      if(treeStart !== -1){
-        const section = reply.slice(treeStart).split('\n').slice(1).join('\n');
+      const idx=reply.indexOf('Knowledge Tree:');
+      if(idx!==-1){
+        const section=reply.slice(idx).split('\n').slice(1).join('\n');
         updateKnowledgeTreeInSidebar(section);
       }
-
       updateProgressBarFromMessage(reply);
     }
 
     /* ---------- Send message to backend ---------- */
     async function sendMessage(msg){
       if(!studentName && /my name is (\w+)/i.test(msg)){
-        studentName = msg.match(/my name is (\w+)/i)[1];
+        studentName=msg.match(/my name is (\w+)/i)[1];
       }
       conversation.push({role:'user',content:msg});
       addMessage(msg,'user');
 
-      thinkingRow = addMessage('💭 Gov. is thinking...','assistant');
+      thinkingRow=addMessage('💭 Gov. is thinking...','assistant');
 
       try{
         const res  = await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({conversation})});
@@ -263,45 +279,49 @@
         conversation.push({role:'assistant',content:reply});
         if(thinkingRow) thinkingRow.remove();
         handleAssistantReply(reply);
-      }catch(e){
+      }catch{
         if(thinkingRow) thinkingRow.remove();
         addMessage('⚠️ Something went wrong. Please try again later.','assistant');
       }
     }
 
     /* ---------- Init ---------- */
-    window.onload = () => {
-      const intro = "Welcome 🎉  What’s your name, grade, and what topic would you like to learn today?";
+    window.onload=()=>{
+      const intro="Welcome 🎉  What’s your name, grade, and what topic would you like to learn today?";
       conversation.push({role:'assistant',content:intro});
       addMessage(intro,'assistant');
     };
 
-    form.addEventListener('submit', e=>{
+    form.addEventListener('submit',e=>{
       e.preventDefault();
-      const msg = input.value.trim();
-      if(msg){ input.value=''; sendMessage(msg); }
+      const msg=input.value.trim();
+      if(msg){input.value='';sendMessage(msg);}
     });
-
     input.addEventListener('keydown',e=>{
-      if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); form.dispatchEvent(new Event('submit')); }
+      if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();form.dispatchEvent(new Event('submit')); }
     });
 
     clearButton.addEventListener('click',()=>{
       conversation=[];chatBox.innerHTML='';studentName='';window.onload();
     });
 
-    /* ---------- Voice input (optional) ---------- */
-    const recognition = 'webkitSpeechRecognition' in window ? new webkitSpeechRecognition():null;
+    /* ---------- Voice input (unchanged) ---------- */
+    const recognition='webkitSpeechRecognition'in window?new webkitSpeechRecognition():null;
     if(recognition){
       recognition.lang='en-NG';recognition.continuous=false;recognition.interimResults=true;
       micButton.addEventListener('click',()=>{recognition.start();micButton.textContent='🎙️'});
       recognition.onresult=e=>{
-        let t='';for(let i=e.resultIndex;i<e.results.length;++i){if(e.results[i].isFinal)t+=e.results[i][0].transcript;}
+        let t='';for(let i=e.resultIndex;i<e.results.length;++i){
+          if(e.results[i].isFinal) t+=e.results[i][0].transcript;
+        }
         if(t.trim()){input.value=t;sendMessage(t);input.value='';}
         micButton.textContent='🎤';
       };
       recognition.onerror=recognition.onend=()=>{micButton.textContent='🎤'};
-    }else{ micButton.disabled=true;micButton.title='Voice input not supported on this browser.'; }
+    }else{
+      micButton.disabled=true;
+      micButton.title='Voice input not supported on this browser.';
+    }
   </script>
 </body>
 </html>
