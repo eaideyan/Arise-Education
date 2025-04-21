@@ -138,7 +138,10 @@ export default async function handler(req, res) {
           'Content-Type': 'application/json',
           'x-goog-api-key': process.env.GEMINI_API_KEY,
         },
-        body: JSON.stringify({ contents: formattedMessages }),
+        body: JSON.stringify({
+  contents: formattedMessages,
+  generationConfig: { temperature: 0.3 }   // 0 = deterministic, 1 = creative
+}),
       }
     );
 
