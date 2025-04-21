@@ -3,237 +3,138 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Gov. Umo Eno – Your AI Tutor 🇳🇬</title>
+  <title>Gov. Umo Eno – Your AI Tutor 🇳🇬</title>
+
+  <!-- Google font -->
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+
   <style>
-    * { box-sizing: border-box; }
-    html, body {
-      font-family: 'Nunito', sans-serif;
-      background-color: #f5f7fa;
-      margin: 0;
-      padding: 0;
-      height: 100%;
+    /* ---------- Base layout ---------- */
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;height:100%;font-family:'Nunito',sans-serif;background:#f5f7fa}
+    body{display:flex;flex-direction:column}
+
+    /* ---------- Top bar ---------- */
+    header{
+      position:fixed;top:0;left:0;right:0;z-index:1000;
+      padding:1rem;text-align:center;line-height:1.2;
+      background:#2563eb;color:#fff;font-weight:700;
+      box-shadow:0 2px 5px rgba(0,0,0,.1)
     }
-    body {
-      display: flex;
-      flex-direction: column;
+    #speakToggleWrapper{
+      position:fixed;top:1rem;right:1rem;z-index:1001;
+      font-size:.85rem;color:#fff
     }
-    header {
-      background-color: #2563eb;
-      color: white;
-      padding: 1rem;
-      text-align: center;
-      font-size: 1.6rem;
-      font-weight: 700;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 1000;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+
+    /* ---------- Main wrapper ---------- */
+    main#wrapper{
+      max-width:1200px;margin:auto;width:100%;
+      display:flex;gap:.5rem;justify-content:center;
+      padding:5rem .5rem 6rem
     }
-    #speakToggleWrapper {
-      position: fixed;
-      top: 1rem;
-      right: 1rem;
-      font-size: 0.85rem;
-      color: white;
-      z-index: 1001;
+    aside,#visuals{
+      width:20%;background:#fff;border-radius:16px;padding:.5rem;
+      box-shadow:0 2px 6px rgba(0,0,0,.08);font-size:.95rem
     }
-    main#wrapper {
-      display: flex;
-      flex-direction: row;
-      justify-content: center;
-      padding-top: 5rem;
-      padding-bottom: 6rem;
-      max-width: 1200px;
-      margin: auto;
-      width: 100%;
-      gap: .5rem;
+    #chatBoxWrapper{
+      flex:2.5;background:#fff;border-radius:16px;
+      box-shadow:0 2px 8px rgba(0,0,0,.05);padding:.5rem;
+      display:flex;flex-direction:column;height:70vh
     }
-    aside {
-      width: 20%;
-      background: white;
-      border-radius: 16px;
-      padding: .5rem;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-      font-size: 0.95rem;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
+    #chat{flex-grow:1;overflow-y:auto;display:flex;flex-direction:column;gap:.6rem;padding-right:.5rem}
+
+    /* ---------- Chat bubbles ---------- */
+    .message-row{display:flex;align-items:flex-start}
+    .message-row.user{justify-content:flex-end}
+    .avatar{width:36px;height:36px;border-radius:50%;margin:0 6px;flex-shrink:0}
+    .user .avatar{background:#bae6fd}
+    .assistant .avatar{
+      background:url('https://cdn-icons-png.flaticon.com/512/1995/1995471.png') center/cover
     }
-    #chatBoxWrapper {
-      flex: 2.5;
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      padding: .5rem;
-      display: flex;
-      flex-direction: column;
-      height: 70vh;
+    .bubble{
+      max-width:75%;padding:.6rem .9rem;border-radius:16px;
+      font-size:1rem;line-height:1.45;white-space:pre-wrap
     }
-    #chat {
-      flex-grow: 1;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 0.6rem;
-      padding-right: 0.5rem;
+    .bubble.user{background:#c7f0d8;border-bottom-right-radius:0;position:relative}
+    .bubble.user::after{
+      content:attr(data-name);font-size:.75rem;color:#1e3a8a;
+      position:absolute;bottom:-1.2rem;right:1rem
     }
-    .message-row {
-      display: flex;
-      align-items: flex-start;
+    .bubble.assistant{background:#e0e7ff;border-bottom-left-radius:0}
+
+    /* ---------- Input area ---------- */
+    form{
+      position:fixed;left:0;right:0;bottom:0;margin:auto;max-width:1200px;
+      background:#fff;padding:.6rem 1rem;border-top:1px solid #ddd;
+      display:flex;gap:.6rem;align-items:center;border-radius:12px 12px 0 0
     }
-    .message-row.user { justify-content: flex-end; }
-    .avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      margin: 0 6px;
-      flex-shrink: 0;
+    textarea{
+      flex:1;font-size:1rem;border-radius:12px;border:1px solid #ccc;
+      padding:.6rem 1rem;height:3rem;resize:none
     }
-    .user .avatar { background-color: #bae6fd; }
-    .assistant .avatar {
-      background-image: url('https://cdn-icons-png.flaticon.com/512/1995/1995471.png');
-      background-size: cover;
-      background-position: center;
+    #controls{display:flex;flex-direction:column;align-items:center;gap:.3rem}
+    .top-buttons{display:flex;gap:.4rem}
+    button{
+      background:#2563eb;color:#fff;border:none;border-radius:10px;
+      padding:.6rem 1rem;font-size:1rem;cursor:pointer
     }
-    .bubble {
-      max-width: 75%;
-      padding: 0.6rem 0.9rem;
-      border-radius: 16px;
-      font-size: 1rem;
-      line-height: 1.45;
-      white-space: pre-wrap;
-      transition: all 0.3s ease;
-    }
-    .bubble.user {
-      background-color: #c7f0d8;
-      border-bottom-right-radius: 0;
-      position: relative;
-    }
-    .bubble.user::after {
-      content: attr(data-name);
-      font-size: 0.75rem;
-      color: #1e3a8a;
-      position: absolute;
-      bottom: -1.2rem;
-      right: 1rem;
-    }
-    .bubble.assistant {
-      background-color: #e0e7ff;
-      border-bottom-left-radius: 0;
-    }
-    #visuals {
-      width: 20%;
-      background: white;
-      border-radius: 16px;
-      padding: .5rem;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-      font-size: 0.95rem;
-    }
-    form {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      max-width: 1200px;
-      margin: auto;
-      background: #fff;
-      border-top: 1px solid #ddd;
-      padding: 0.6rem 1rem;
-      display: flex;
-      gap: 0.6rem;
-      align-items: center;
-      border-radius: 12px 12px 0 0;
-    }
-    textarea {
-      flex: 1;
-      font-size: 1rem;
-      border-radius: 12px;
-      border: 1px solid #ccc;
-      padding: 0.6rem 1rem;
-      height: 3rem;
-      resize: none;
-    }
-    #controls {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.3rem;
-    }
-    .top-buttons {
-      display: flex;
-      gap: 0.4rem;
-    }
-    button {
-      background-color: #2563eb;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      padding: 0.6rem 1rem;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-    .clear-button {
-      background-color: orange;
-      width: 100%;
-      font-size: 0.85rem;
-      padding: 0.3rem 0.8rem;
-    }
-    @media (max-width: 768px) {
-      aside, #visuals { display: none; }
-      main#wrapper { flex-direction: column; align-items: stretch; padding: 1rem; }
+    .clear-button{background:orange;width:100%;font-size:.85rem;padding:.3rem .8rem}
+
+    /* ---------- Responsive ---------- */
+    @media(max-width:768px){
+      aside,#visuals{display:none}
+      main#wrapper{flex-direction:column;align-items:stretch;padding:1rem}
     }
   </style>
 </head>
 <body>
+
+  <!-- Header -->
   <header>
-  <div style="line-height: 1.2;">
-    <div style="font-size: 1.4rem; font-weight: 700;">Arise Education</div>
-    <div style="font-size: 0.65rem; font-weight: 400;">Powered by Akwa Ibom State Government</div>
-  </div>
-</header>
+    <div style="font-size:1.4rem">Arise Education</div>
+    <div style="font-size:.65rem;font-weight:400">Powered by Akwa Ibom State Government</div>
+  </header>
   <div id="speakToggleWrapper">
-    <label><input type="checkbox" id="speakToggle"> 🔊 Gov. Umo Eno Speaks</label>
+    <label><input type="checkbox" id="speakToggle"> 🔊 Gov. Umo Eno Speaks</label>
   </div>
 
+  <!-- Main -->
   <main id="wrapper">
-<aside id="leftSidebar">
-  <h3 id="knowledgeHeader" style="display: none;">📘 Knowledge Tree</h3>
+    <!-- Left sidebar -->
+    <aside id="leftSidebar">
+      <h3 id="knowledgeHeader" style="display:none">📘 Knowledge Tree</h3>
 
-  <div id="knowledgeContent">
-    <!-- Default welcome message -->
-    <div id="aboutMrE">
-      <p><strong>I am Gov. Umo Eno AI</strong></p>
-      <p>Your friendly AI tutor! 🌟<br/>
-        I’ll help you learn one step at a time. Feel free to interrupt, ask questions and clarification.<br/>
-        Remember this space belongs to me and you and we can learn together, no stress — so relax, let’s start!
-      </p>
-      <p><strong>Abasi Sosong O!</strong></p>
-    </div>
+      <div id="knowledgeContent">
+        <div id="aboutMrE">
+          <p><strong>I am Gov. Umo Eno AI</strong></p>
+          <p>Your friendly AI tutor! 🌟<br>
+             I’ll help you learn one step at a time. Feel free to interrupt,<br>
+             ask questions and clarification. Remember this space belongs<br>
+             to you and me — no stress, let’s start!</p>
+          <p><strong>Abasi Sosong O!</strong></p>
+        </div>
 
-    <!-- Dynamic knowledge tree will be injected here -->
-    <div id="treeContents" style="margin-top: 0.8rem;"></div>
+        <div id="treeContents" style="margin-top:.8rem"></div>
 
-    <!-- Progress bar + feedback -->
-    <div id="progressVisual" style="margin-top: 1rem; font-weight: bold;"></div>
-    <div id="progressFeedback" style="font-size: 0.85rem; color: #4b5563; margin-top: 0.3rem;"></div>
-  </div>
-</aside>
+        <div id="progressVisual"  style="margin-top:1rem;font-weight:bold"></div>
+        <div id="progressFeedback"style="font-size:.85rem;color:#4b5563;margin-top:.3rem"></div>
+      </div>
+    </aside>
 
-    <div id="chatBoxWrapper">
-      <div id="chat"></div>
-    </div>
+    <!-- Chat column -->
+    <div id="chatBoxWrapper"><div id="chat"></div></div>
 
+    <!-- Right sidebar -->
     <aside id="visuals">
       <h3>🔍 Topic visuals</h3>
       <p>Coming soon.</p>
     </aside>
   </main>
 
+  <!-- Input -->
   <form id="chat-form">
     <textarea id="messageInput" placeholder="Type your message..." required></textarea>
+
     <div id="controls">
       <div class="top-buttons">
         <button type="submit">Send</button>
@@ -243,192 +144,164 @@
     </div>
   </form>
 
+  <!-- Script -->
   <script>
-    const chatBox = document.getElementById('chat');
-    const form = document.getElementById('chat-form');
-    const input = document.getElementById('messageInput');
-    const micButton = document.getElementById('micButton');
-    const clearButton = document.getElementById('clearButton');
-    const speakToggle = document.getElementById('speakToggle');
-    let conversation = [];
-    let studentName = '';
-    let thinkingRow = null;
+    const chatBox       = document.getElementById('chat');
+    const form          = document.getElementById('chat-form');
+    const input         = document.getElementById('messageInput');
+    const micButton     = document.getElementById('micButton');
+    const clearButton   = document.getElementById('clearButton');
+    const speakToggle   = document.getElementById('speakToggle');
 
+    let conversation = [];
+    let studentName  = '';
+    let thinkingRow  = null;
+
+    /* ---------- Chat helpers ---------- */
     function addMessage(content, role) {
-      const row = document.createElement('div');
+      const row     = document.createElement('div');
       row.className = `message-row ${role}`;
-      const avatar = document.createElement('div');
+
+      const avatar  = document.createElement('div');
       avatar.className = `avatar ${role}`;
-      const bubble = document.createElement('div');
+
+      const bubble  = document.createElement('div');
       bubble.className = `bubble ${role}`;
       bubble.innerHTML = content
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // bold
-        .replace(/\*(.*?)\*/g, '<em>$1</em>');             // italic
+        .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g,'<em>$1</em>');
+
       if (role === 'user') bubble.setAttribute('data-name', studentName || '');
+
       row.appendChild(role === 'assistant' ? avatar : bubble);
-      row.appendChild(role === 'assistant' ? bubble : avatar);
+      row.appendChild(role === 'assistant' ? bubble  : avatar);
       chatBox.appendChild(row);
       chatBox.scrollTop = chatBox.scrollHeight;
-      return row; // ✅ Return the DOM node
+      return row;
     }
 
-    function speak(text) {
-      if (!speakToggle.checked) return;
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'en-NG';
-      utterance.pitch = 1;
-      utterance.rate = 1;
-      speechSynthesis.speak(utterance);
+    function speak(text){
+      if(!speakToggle.checked) return;
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang  = 'en-NG'; u.pitch = 1; u.rate = 1;
+      speechSynthesis.speak(u);
     }
 
-    async function sendMessage(message) {
-      if (!studentName && /my name is (\w+)/i.test(message)) {
-        studentName = message.match(/my name is (\w+)/i)[1];
+    /* ---------- Progress‑bar helpers (FIXED) ---------- */
+    function updateProgressBar(state='⬜', mastered=0, total=undefined) {
+      if(total===undefined){ total = (state.match(/🟢|🟧|⬜/g)||[]).length; }
+
+      const bar  = document.getElementById('progressVisual');
+      const feed = document.getElementById('progressFeedback');
+
+      if(bar)  bar.textContent  = `🧠 Progress: ${state} (${mastered}/${total} mastered!)`;
+      if(feed) feed.textContent =
+        mastered === 0        ? "Let's begin your learning journey! 🚀" :
+        mastered === total    ? "Woohoo! 🎉 You've completed the topic!" :
+                                "Great job! Keep going, you're doing well! 🌟";
+    }
+
+    function updateProgressBarFromMessage(msg){
+      const m = msg.match(/🧠 Progress:\s*(.*?)\s*\((\d+)\/(\d+)\s+mastered!\)/);
+      if(!m) return;
+      const [, state, mastered, total] = m;
+      updateProgressBar(state, +mastered, +total);
+    }
+
+    function updateKnowledgeTreeInSidebar(treeText){
+      const header = document.getElementById('knowledgeHeader');
+      const about  = document.getElementById('aboutMrE');
+      const tree   = document.getElementById('treeContents');
+
+      const numbered = treeText
+        .split('\n')
+        .filter(l => /^\d+\./.test(l.trim()));
+
+      if(numbered.length){
+        header.style.display='block';
+        about.style.display  ='none';
+
+        tree.innerHTML='<ol style="padding-left:1rem;">' +
+          numbered.map(l=>`<li>${l.trim().replace(/^\d+\.\s*/,'')}</li>`).join('') +
+        '</ol>';
+
+        updateProgressBar('⬜'.repeat(numbered.length), 0, numbered.length);
       }
-      conversation.push({ role: 'user', content: message });
-      addMessage(message, 'user');
+    }
 
-      thinkingRow = addMessage('💭 Gov. is thinking...', 'assistant');
+    /* ---------- Handle AI reply ---------- */
+    function handleAssistantReply(reply){
+      addMessage(reply,'assistant');
+      speak(reply);
 
-      try {
-        const res = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ conversation })
-        });
+      // Tree extraction
+      const treeStart = reply.indexOf('Knowledge Tree:');
+      if(treeStart !== -1){
+        const section = reply.slice(treeStart).split('\n').slice(1).join('\n');
+        updateKnowledgeTreeInSidebar(section);
+      }
+
+      updateProgressBarFromMessage(reply);
+    }
+
+    /* ---------- Send message to backend ---------- */
+    async function sendMessage(msg){
+      if(!studentName && /my name is (\w+)/i.test(msg)){
+        studentName = msg.match(/my name is (\w+)/i)[1];
+      }
+      conversation.push({role:'user',content:msg});
+      addMessage(msg,'user');
+
+      thinkingRow = addMessage('💭 Gov. is thinking...','assistant');
+
+      try{
+        const res  = await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({conversation})});
         const data = await res.json();
-        let reply = data.message;
-        reply = reply.replace(/Do you understand\?.*?/gi, 'Do you understand?');
-        conversation.push({ role: 'assistant', content: reply });
+        let reply  = data.message || '';
+        reply      = reply.replace(/Do you understand\?.*?/gi,'Do you understand?');
 
-        if (thinkingRow) thinkingRow.remove();
+        conversation.push({role:'assistant',content:reply});
+        if(thinkingRow) thinkingRow.remove();
         handleAssistantReply(reply);
-      } catch (err) {
-        if (thinkingRow) thinkingRow.remove();
-        addMessage("⚠️ Something went wrong. Please try again later.", 'assistant');
+      }catch(e){
+        if(thinkingRow) thinkingRow.remove();
+        addMessage('⚠️ Something went wrong. Please try again later.','assistant');
       }
     }
 
-    // ----- UI Sync Functions -----
-function handleAssistantReply(reply) {
-  addMessage(reply, 'assistant');
-  speak(reply);
-
-  const treeStart = reply.indexOf('Knowledge Tree:');
-  if (treeStart !== -1) {
-    const treeSection = reply.slice(treeStart).split('\n').slice(1); // all lines after "Knowledge Tree:"
-    const numberedLines = treeSection.filter(line => /^\d+[\.\)]/.test(line.trim()));
-    if (numberedLines.length >= 3) {
-      updateKnowledgeTreeInSidebar(numberedLines.join('\n'));
-      updateProgressBar('⬜'.repeat(numberedLines.length), 0);
-    }
-  }
-
-  updateProgressBarFromMessage(reply);
-}
-
-function updateKnowledgeTreeInSidebar(treeText) {
-  const header = document.getElementById('knowledgeHeader');
-  const about = document.getElementById('aboutMrE');
-  const treeContainer = document.getElementById('treeContents');
-
-  if (!header || !about || !treeContainer) return;
-
-  const lines = treeText
-    .split('\n')
-    .filter(line => /^\d+\./.test(line.trim()))
-    .map(line => `<li>${line.trim().replace(/^\d+\.\s*/, '')}</li>`)
-    .join('');
-
-  if (lines) {
-    header.style.display = 'block';
-    about.style.display = 'none';
-    treeContainer.innerHTML = `<ol style="padding-left: 1rem;">${lines}</ol>`;
-    updateProgressBar(); // reset progress
-  }
-}
-
-function updateProgressBar(state = '⬜⬜⬜⬜⬜', count = 0) {
-  const progressEl = document.getElementById('progressVisual');
-  const feedbackEl = document.getElementById('progressFeedback');
-
-  if (progressEl) {
-    progressEl.textContent = `🧠 Progress: ${state} (${count}/${state.length} mastered!)`;
-  }
-
-  if (feedbackEl) {
-    feedbackEl.textContent =
-      count === 0
-        ? "Let's begin your learning journey! 🚀"
-        : count === state.length
-        ? "Woohoo! 🎉 You've completed the topic!"
-        : "Great job! Keep going, you're doing well! 🌟";
-  }
-}
-
-function updateProgressBarFromMessage(message) {
-  const match = message.match(/🧠 Progress: (.*?) \((\d+)\/(\d+) mastered!\)/);
-  if (!match) return;
-  const [_, state, count, total] = match;
-updateProgressBar(state, parseInt(count));
-}
-
-    // ----- Load Initial Prompt -----
+    /* ---------- Init ---------- */
     window.onload = () => {
-      const intro = "Welcome🎉 What’s your name, grade, and what topic would you like to learn today?";
-      conversation.push({ role: 'assistant', content: intro });
-      addMessage(intro, 'assistant');
+      const intro = "Welcome 🎉  What’s your name, grade, and what topic would you like to learn today?";
+      conversation.push({role:'assistant',content:intro});
+      addMessage(intro,'assistant');
     };
 
-    form.addEventListener('submit', e => {
+    form.addEventListener('submit', e=>{
       e.preventDefault();
-      const message = input.value.trim();
-      if (!message) return;
-      input.value = '';
-      sendMessage(message);
+      const msg = input.value.trim();
+      if(msg){ input.value=''; sendMessage(msg); }
     });
 
-    input.addEventListener('keydown', e => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        form.dispatchEvent(new Event('submit'));
-      }
+    input.addEventListener('keydown',e=>{
+      if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); form.dispatchEvent(new Event('submit')); }
     });
 
-    clearButton.addEventListener('click', () => {
-      conversation = [];
-      chatBox.innerHTML = '';
-      studentName = '';
-      window.onload();
+    clearButton.addEventListener('click',()=>{
+      conversation=[];chatBox.innerHTML='';studentName='';window.onload();
     });
 
-    // Voice Input (optional)
-    const recognition = ('webkitSpeechRecognition' in window) ? new webkitSpeechRecognition() : null;
-    if (recognition) {
-      recognition.lang = 'en-NG';
-      recognition.continuous = false;
-      recognition.interimResults = true;
-      micButton.addEventListener('click', () => { recognition.start(); micButton.textContent = '🎙️'; });
-      recognition.onresult = (e) => {
-        let transcript = '';
-        for (let i = e.resultIndex; i < e.results.length; ++i) {
-          if (e.results[i].isFinal) {
-            transcript += e.results[i][0].transcript;
-          }
-        }
-        if (transcript.trim()) {
-          input.value = transcript;
-          sendMessage(transcript);
-          input.value = '';
-        }
-        micButton.textContent = '🎤';
+    /* ---------- Voice input (optional) ---------- */
+    const recognition = 'webkitSpeechRecognition' in window ? new webkitSpeechRecognition():null;
+    if(recognition){
+      recognition.lang='en-NG';recognition.continuous=false;recognition.interimResults=true;
+      micButton.addEventListener('click',()=>{recognition.start();micButton.textContent='🎙️'});
+      recognition.onresult=e=>{
+        let t='';for(let i=e.resultIndex;i<e.results.length;++i){if(e.results[i].isFinal)t+=e.results[i][0].transcript;}
+        if(t.trim()){input.value=t;sendMessage(t);input.value='';}
+        micButton.textContent='🎤';
       };
-      recognition.onerror = () => { micButton.textContent = '🎤'; };
-      recognition.onend = () => { micButton.textContent = '🎤'; };
-    } else {
-      micButton.disabled = true;
-      micButton.title = "Voice input not supported on this browser.";
-    }
+      recognition.onerror=recognition.onend=()=>{micButton.textContent='🎤'};
+    }else{ micButton.disabled=true;micButton.title='Voice input not supported on this browser.'; }
   </script>
 </body>
 </html>
