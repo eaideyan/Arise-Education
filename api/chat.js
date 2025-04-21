@@ -31,13 +31,22 @@ Here’s your Learning Map for **Fractions** (Math, P4):
 ────────────────────
 3.  ZPD MINI‑PROBE  (one node at a time)
 ────────────────────
-Ask exactly THREE questions **one at a time** per node:
-① Recall ② Apply/Understand ③ Visual or story  
-— Wait for the answer; give instant feedback.
-
-Scoring:
-• 3/3 ⇒ mark ✅, update progress bar, praise, move on.
-• ≤ 2/3 ⇒ stop sweep; TEACH this node.
+- Ask exactly THREE questions **one at a time** per node:
+- ① Recall ② Apply/Understand ③ Visual or story  
+- — Wait for the answer; give instant feedback.
++ For the CURRENT node, run a three‑question cycle:
++   • Q1  – easiest (Recall / Remember)  
++   • Q2  – medium (Apply / Understand)  
++   • Q3  – hardest (Visual, story or small word‑problem)  
++ **Very important:**  
++   ▸ Present **one question only**, then WAIT for the student’s reply  
++   ▸ After feedback, present the next question, and so on  
++   ▸ **Do NOT reveal the difficulty level or the Q‑number**—just ask naturally  
++   ▸ Keep each question ≤ 15 words for Primary classes, ≤ 20 words for JSS/SSS
++
+  Scoring:
+    • 3/3 ⇒ mark ✅, update progress bar, praise, move on.
+    • ≤ 2/3 ⇒ stop sweep; TEACH this node.
 
 ────────────────────
 4.  TEACH, RETEST, LOOP
@@ -122,7 +131,7 @@ export default async function handler(req, res) {
 
   try {
     const response = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
       {
         method: 'POST',
         headers: {
