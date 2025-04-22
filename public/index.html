@@ -191,51 +191,44 @@ function setTree(txt){
 
 /* ---------- HANDLE ASSISTANT ---------- */
 function handleAI(reply) {
-  // 1) Show reply in chat + speak it
+  // 1) Show the assistant’s reply in chat and speak it aloud
   addMsg(reply, 'assistant');
   speak(reply);
 
-  // 2) VISUALS PANE: reset with header + fallback
+  // 2) Embed any image or YouTube link into the visuals sidebar
   const visuals = document.getElementById('visuals');
-  visuals.innerHTML = `
-    <h3>🔍 Topic visuals</h3>
-    <p>Coming soon.</p>
-  `;
+  visuals.innerHTML = '<h3>🔍 Topic visuals</h3>'; // reset
 
-  // 2a) Try to find an image URL
+  // 2a) Image URLs (png, jpg, gif)
   const imgMatch = reply.match(/(https?:\/\/\S+\.(?:png|jpe?g|gif))/i);
   if (imgMatch) {
-    visuals.innerHTML = `<h3>🔍 Topic visuals</h3>`;  // clear fallback
     const img = document.createElement('img');
     img.src = imgMatch[1];
     img.style.cssText = 'width:100%;border-radius:8px;margin-top:8px;';
     visuals.appendChild(img);
   }
 
-  // 2b) Try to find a YouTube link
+  // 2b) YouTube links
   const ytMatch = reply.match(/youtu(?:be\.com\/watch\?v=|\.be\/)([\w-]+)/i);
   if (ytMatch) {
-    // if we already put an <img>, keep it; otherwise clear fallback header
-    if (!imgMatch) visuals.innerHTML = `<h3>🔍 Topic visuals</h3>`;
     const iframe = document.createElement('iframe');
     iframe.width = '100%';
     iframe.height = '200';
     iframe.src = `https://www.youtube.com/embed/${ytMatch[1]}`;
-    iframe.allow =
-      'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
     iframe.setAttribute('allowfullscreen', '');
     iframe.style.cssText = 'margin-top:8px;border-radius:8px;';
     visuals.appendChild(iframe);
   }
 
-  // 3) KNOWLEDGE TREE
+  // 3) Update Knowledge Tree if present
   const idx = reply.indexOf('Knowledge Tree:');
   if (idx !== -1) {
-    const treeBlock = reply.slice(idx).split('\n').slice(1).join('\n');
-    setTree(treeBlock);
+    const treeText = reply.slice(idx).split('\n').slice(1).join('\n');
+    setTree(treeText);
   }
 
-  // 4) PROGRESS BAR
+  // 4) Update progress bar (tolerant matching of circle emojis)
   const m = reply.match(/([🟢🟧⬜]{3,})/);
   if (m) {
     let state = m[1];
@@ -246,7 +239,7 @@ function handleAI(reply) {
     progBar(state, mastered, totalNodes || state.length);
   }
 
-  // 5) FINAL CELEBRATION
+  // 5) Celebrate final mastery
   if (/You\s+MASTERED/i.test(reply)) {
     confetti();
   }
