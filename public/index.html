@@ -208,16 +208,25 @@ function setTree(txt){
 
 /* ---------- HANDLE ASSISTANT ---------- */
 function handleAI(reply) {
-  // 1) Show the assistant’s reply in chat and speak it aloud
-  addMsg(reply, 'assistant');
-  speak(reply);
-
-// 2) Embed images/videos in visuals sidebar
-  const visuals = document.getElementById('visuals');
-  visuals.innerHTML = '<h3>🔍 Topic visuals</h3>'; // Reset
-
-  // 2a) Improved image detection (supports Markdown-style "Image: URL")
+  // ====== NEW: Extract media first & clean reply ======
   const imgUrls = reply.match(/(?:Image:|!\[.*?\]\()(https?:\/\/\S+\.(?:png|jpe?g|gif|svg))/gi) || [];
+  const ytUrls = reply.match(/(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/watch\?v=)([\w-]+)/gi) || [];
+  
+  // Create media-free message for chat
+  let cleanReply = reply;
+  imgUrls.forEach(url => cleanReply = cleanReply.replace(url, ''));
+  ytUrls.forEach(url => cleanReply = cleanReply.replace(url, ''));
+  cleanReply = cleanReply.replace(/(Image:|!\[.*?\]\()/gi, '').trim();
+
+  // ====== 1) Show CLEANED reply in chat ======
+  addMsg(cleanReply, 'assistant');
+  speak(cleanReply);
+
+  // ====== 2) Existing sidebar logic (unchanged) ======
+  const visuals = document.getElementById('visuals');
+  visuals.innerHTML = '<h3>🔍 Topic visuals</h3>';
+  
+  // Process images
   imgUrls.forEach(url => {
     const cleanUrl = url.replace(/(Image: |!\[.*?\]\()/i, '');
     const img = document.createElement('img');
@@ -227,8 +236,7 @@ function handleAI(reply) {
     visuals.appendChild(img);
   });
 
-  // 2b) Improved YouTube detection
-  const ytUrls = reply.match(/(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/watch\?v=)([\w-]+)/gi) || [];
+  // Process YouTube
   ytUrls.forEach(ytUrl => {
     const videoId = ytUrl.split(/\/|v=|\?/).pop();
     const iframe = document.createElement('iframe');
@@ -240,30 +248,26 @@ function handleAI(reply) {
     visuals.appendChild(iframe);
   });
 
-  // 3) Update Knowledge Tree if present
+  // ====== 3-5) Existing logic below (UNCHANGED) ======
+  // Knowledge Tree
   const idx = reply.indexOf('Knowledge Tree:');
   if (idx !== -1) {
     const treeText = reply.slice(idx).split('\n').slice(1).join('\n');
     setTree(treeText);
   }
 
-  // 4) Update progress bar (tolerant matching of circle emojis)
+  // Progress bar
   const m = reply.match(/([🟢🟧⬜]{3,})/);
   if (m) {
     let state = m[1];
-    if (totalNodes && state.length < totalNodes) {
-      state = state.padEnd(totalNodes, '⬜');
-    }
+    if (totalNodes && state.length < totalNodes) state = state.padEnd(totalNodes, '⬜');
     const mastered = (state.match(/🟢/g) || []).length;
     progBar(state, mastered, totalNodes || state.length);
   }
 
-  // 5) Celebrate final mastery
-  if (/You\s+MASTERED/i.test(reply)) {
-    confetti();
-  }
+  // Confetti
+  if (/You\s+MASTERED/i.test(reply)) confetti();
 }
-
 /* ---------- SEND ---------- */
 async function send(msg){
   if(!student && /my name is (\w+)/i.test(msg))
