@@ -152,7 +152,8 @@ function setTree(txt){
   document.getElementById('knowledgeHeader').style.display='block';
   document.getElementById('aboutMrE').style.display='none';
   document.getElementById('treeContents').innerHTML='<ol style="padding-left:1rem">'+lines.map(l=>`<li>${l.replace(/^\d+\.\s*/,'')}</li>`).join('')+'</ol>';
-  progBar('⬜'.repeat(lines.length),0,lines.length);
+  totalNodes = lines.length;
+  progBar('⬜'.repeat(totalNodes), 0, totalNodes);
 }
 
 /* ---------- HANDLE ASSISTANT ---------- */
@@ -169,12 +170,15 @@ function handleAI(reply){
   }
 
   // 3 progress‑bar  (tolerant: just grab the circle‑string)
-  const bar = reply.match(/([🟢🟧⬜]{3,})/);
-  if (bar){
-    const state    = bar[1];
-    const mastered = (state.match(/🟢/g) || []).length;
-    progBar(state, mastered, state.length);
+const found = reply.match(/([🟢🟧⬜]{3,})/);
+if (found){
+  let state = found[1];
+  if (totalNodes && state.length < totalNodes){
+    state = state.padEnd(totalNodes, '⬜'); // add blanks to match tree
   }
+  const mastered = (state.match(/🟢/g) || []).length;
+  progBar(state, mastered, totalNodes || state.length);
+}
 
   // 4 confetti on final mastery
   if (/You\s+MASTERED/i.test(reply)) confetti();
