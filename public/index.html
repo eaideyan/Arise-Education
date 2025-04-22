@@ -159,8 +159,11 @@ function setTree(txt){
 function handleAI(reply){
   addMsg(reply,'assistant');speak(reply);
   const i=reply.indexOf('Knowledge Tree:');if(i!==-1)setTree(reply.slice(i).split('\n').slice(1).join('\n'));
-  const m=reply.match(/🧠 Progress:\s*(.*?)\s*\((\d+)\/(\d+)/);
-  if(m)progBar(m[1],+m[2],+m[3]);if(/You\s+MASTERED/i.test(reply))confetti();
+const bar = reply.match(/([🟢🟧⬜]{3,})/);      // find the circles
+if (bar) {
+  const state    = bar[1];
+  const mastered = (state.match(/🟢/g) || []).length;
+  progBar(state, mastered, state.length);
 }
 
 /* ---------- SEND ---------- */
