@@ -189,8 +189,8 @@ async function send(msg){
   try{
     const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({conversation:history})});
     const j=await r.json();let rep=j.message||'';rep=rep.replace(/Do you understand\?.*?/gi,'Do you understand?');
-    history.push({role:'assistant',content:rep});if (thinking) thinking.remove();handleAI(rep);
-  }catch{if (thinking) thinking.remove();addMsg('⚠️ Something went wrong','assistant');}
+    history.push({role:'assistant',content:rep});if (thinking) { thinking.remove(); thinking = null; } handleAI(rep);
+  }catch{if (thinking) { thinking.remove(); thinking = null; };addMsg('⚠️ Something went wrong','assistant');}
 }
 
 /* ---------- INIT ---------- */
