@@ -157,14 +157,29 @@ function setTree(txt){
 
 /* ---------- HANDLE ASSISTANT ---------- */
 function handleAI(reply){
-  addMsg(reply,'assistant');speak(reply);
-  const i=reply.indexOf('Knowledge Tree:');if(i!==-1)setTree(reply.slice(i).split('\n').slice(1).join('\n'));
-const bar = reply.match(/([🟢🟧⬜]{3,})/);      // find the circles
-if (bar) {
-  const state    = bar[1];
-  const mastered = (state.match(/🟢/g) || []).length;
-  progBar(state, mastered, state.length);
-}
+  // 1 show bubble & speech
+  addMsg(reply,'assistant');
+  speak(reply);
+
+  // 2 knowledge tree
+  const idx = reply.indexOf('Knowledge Tree:');
+  if (idx !== -1){
+    const treeText = reply.slice(idx).split('\n').slice(1).join('\n');
+    setTree(treeText);
+  }
+
+  // 3 progress‑bar  (tolerant: just grab the circle‑string)
+  const bar = reply.match(/([🟢🟧⬜]{3,})/);
+  if (bar){
+    const state    = bar[1];
+    const mastered = (state.match(/🟢/g) || []).length;
+    progBar(state, mastered, state.length);
+  }
+
+  // 4 confetti on final mastery
+  if (/You\s+MASTERED/i.test(reply)) confetti();
+}   //  <‑‑‑‑‑ this closing brace was missing
+
 
 /* ---------- SEND ---------- */
 async function send(msg){
