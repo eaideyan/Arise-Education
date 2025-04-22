@@ -1,133 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Gov. Umo Eno – Your AI Tutor 🇳🇬</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Gov. Umo Eno – Your AI Tutor 🇳🇬</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
 <style>
-/* ---------- RESET & BASE ---------- */
+/* ---------- BASE ---------- */
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;font-family:'Nunito',sans-serif;background:#f5f7fa;overscroll-behavior:none;}
+html,body{height:100%;font-family:'Nunito',sans-serif;background:#f5f7fa}
 body{display:flex;flex-direction:column;}
-a{color:inherit;text-decoration:none}
 
 /* ---------- HEADER ---------- */
-header{
-  position:fixed;top:0;left:0;right:0;z-index:1000;
+header{position:fixed;inset:0 0 auto;z-index:1000;
   padding:1rem env(safe-area-inset-right) 1rem env(safe-area-inset-left);
-  background:#2563eb;color:#fff;text-align:center;
-  font-size:1.4rem;font-weight:700;line-height:1.2;
-  box-shadow:0 2px 5px rgba(0,0,0,.1);
-}
+  background:#2563eb;color:#fff;text-align:center;line-height:1.2;
+  font-size:1.4rem;font-weight:700;box-shadow:0 2px 5px rgba(0,0,0,.1)}
 header small{display:block;font-size:.7rem;font-weight:400}
 
-/* ---------- SPEAK TOGGLE ---------- */
-#speakToggleWrapper{
-  position:fixed;top:1rem;right:1rem;z-index:1001;
-  font-size:.85rem;color:#fff;
-}
+/* ---------- VOICE TOGGLE ---------- */
+#speakToggleWrapper{position:fixed;top:1rem;right:1rem;z-index:1001;
+  font-size:.85rem;color:#fff}
 
-/* ---------- MAIN LAYOUT ---------- */
-main#wrapper{
-  flex:1;                         /* take remaining height */
-  display:flex;gap:.5rem;justify-content:center;
-  max-width:1200px;width:100%;margin:auto;
-  padding:5rem .5rem calc(6rem + env(safe-area-inset-bottom));
-  min-height:0;                   /* allow children to shrink for scroll */
-}
+/* ---------- MAIN WRAPPER ---------- */
+main#wrapper{flex:1;display:flex;gap:.5rem;max-width:1200px;width:100%;
+  margin:auto;min-height:0;
+  padding:5rem .5rem calc(6.2rem + env(safe-area-inset-bottom));}
 
 /* ---------- SIDEBARS ---------- */
-aside,#visuals{
-  width:20%;background:#fff;border-radius:16px;padding:.5rem;
-  box-shadow:0 2px 6px rgba(0,0,0,.08);font-size:.95rem;
-  display:flex;flex-direction:column;min-height:0;
-}
+aside,#visuals{width:20%;background:#fff;border-radius:16px;padding:.5rem;
+  box-shadow:0 2px 6px rgba(0,0,0,.08);font-size:.95rem;display:flex;flex-direction:column;min-height:0;}
 #visuals h3{margin-bottom:.3rem}
 
-/* ---------- CHAT COLUMN ---------- */
-#chatBoxWrapper{
-  flex:2.5;display:flex;flex-direction:column;min-height:0;
-  background:#fff;border-radius:16px;padding:.5rem;
-  box-shadow:0 2px 8px rgba(0,0,0,.05);
-}
-#chat{
-  flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;
-  display:flex;flex-direction:column;gap:.6rem;
-  padding-right:.5rem;scroll-behavior:smooth;
-}
+/* ---------- CHAT ---------- */
+#chatBoxWrapper{flex:2.5;background:#fff;border-radius:16px;
+  box-shadow:0 2px 8px rgba(0,0,0,.05);padding:.5rem;
+  display:flex;flex-direction:column;min-height:0;}
+#chat{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:.6rem;padding-right:.5rem;scroll-behavior:smooth}
 
-/* ---------- CHAT BUBBLES ---------- */
-.message-row{display:flex;align-items:flex-start;}
+/* ---------- BUBBLES ---------- */
+.message-row{display:flex;align-items:flex-start}
 .message-row.user{justify-content:flex-end}
 .avatar{width:36px;height:36px;border-radius:50%;margin:0 6px;flex-shrink:0}
 .user .avatar{background:#bae6fd}
-.assistant .avatar{
-  background:url('https://cdn-icons-png.flaticon.com/512/1995/1995471.png') center/cover}
-.bubble{
-  max-width:75%;padding:.6rem .9rem;border-radius:16px;
-  font-size:1rem;line-height:1.45;white-space:pre-wrap}
+.assistant .avatar{background:url('https://cdn-icons-png.flaticon.com/512/1995/1995471.png') center/cover}
+.bubble{max-width:75%;padding:.6rem .9rem;border-radius:16px;font-size:1rem;line-height:1.45;white-space:pre-wrap}
 .bubble.user{background:#c7f0d8;border-bottom-right-radius:0;position:relative}
-.bubble.user::after{
-  content:attr(data-name);font-size:.75rem;color:#1e3a8a;
-  position:absolute;bottom:-1.2rem;right:1rem}
+.bubble.user::after{content:attr(data-name);font-size:.75rem;color:#1e3a8a;position:absolute;bottom:-1.2rem;right:1rem}
 .bubble.assistant{background:#e0e7ff;border-bottom-left-radius:0}
 
 /* ---------- INPUT BAR ---------- */
-form{
-  position:fixed;left:0;right:0;bottom:0;z-index:1000;
-  max-width:1200px;margin:auto;
-  background:#fff;padding:.6rem 1rem env(safe-area-inset-bottom);
-  border-top:1px solid #ddd;border-radius:12px 12px 0 0;
-  display:flex;gap:.6rem;align-items:center;
-}
-textarea{
-  flex:1;border:1px solid #ccc;border-radius:12px;
-  font-size:1rem;padding:.6rem 1rem;height:3rem;resize:none;min-height:3rem;
-}
-textarea.auto{height:auto}             /* auto-expand flag */
-#controls{display:flex;flex-direction:column;gap:.3rem;align-items:center}
+form{position:fixed;inset:auto 0 env(safe-area-inset-bottom);z-index:1000;
+  max-width:1200px;margin:auto;background:#fff;border-top:1px solid #ddd;
+  padding:.6rem 1rem .6rem 1rem;display:flex;gap:.6rem;align-items:center;
+  border-radius:12px 12px 0 0}
+textarea{flex:1;border:1px solid #ccc;border-radius:12px;padding:.6rem 1rem;
+  font-size:1rem;min-height:3rem;max-height:8rem;overflow:auto;resize:none}
+textarea.auto{height:auto}
+#controls{display:flex;flex-direction:column;align-items:center;gap:.3rem}
 .top-buttons{display:flex;gap:.4rem}
-button{
-  background:#2563eb;color:#fff;border:none;border-radius:10px;
-  font-size:1rem;padding:.6rem 1rem;cursor:pointer}
+button{background:#2563eb;color:#fff;border:none;border-radius:10px;
+  padding:.6rem 1rem;font-size:1rem;cursor:pointer}
 .clear-button{background:orange;width:100%;font-size:.85rem;padding:.3rem .8rem}
 
-/* ---------- MOBILE LAYOUT ---------- */
+/* ---------- MOBILE ---------- */
 @media(max-width:768px){
   aside,#visuals{display:none}
-  main#wrapper{flex-direction:column;align-items:stretch;padding:4.5rem 1rem 7rem;}
+  main#wrapper{flex-direction:column;align-items:stretch;padding:4.7rem 1rem calc(7.3rem + env(safe-area-inset-bottom));}
 }
 
-/* ---------- CELEBRATION SPRINKLE ---------- */
+/* ---------- CONFETTI ---------- */
 @keyframes floatUp{0%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-140px)}}
-#cssConfetti{
-  position:fixed;left:50%;bottom:60px;
-  z-index:9999;font-size:2.6rem;pointer-events:none;
-  animation:floatUp 1.3s ease-out forwards}
+#cssConfetti{position:fixed;left:50%;bottom:60px;z-index:9999;font-size:2.6rem;pointer-events:none;animation:floatUp 1.3s ease-out forwards}
 </style>
 </head>
 <body>
-<!-- HEADER -->
-<header>
-  Arise Education
-  <small>Powered by Akwa Ibom State Government</small>
-</header>
+<header>Arise Education<small>Powered by Akwa Ibom State Government</small></header>
 <div id="speakToggleWrapper">
-  <label><input type="checkbox" id="speakToggle"> 🔊 Gov. Umo Eno Speaks</label>
+  <label><input type="checkbox" id="speakToggle"> 🔊 Gov. Umo Eno Speaks</label>
 </div>
 
-<!-- MAIN WRAPPER -->
 <main id="wrapper">
-  <!-- LEFT SIDEBAR -->
   <aside id="leftSidebar">
-    <h3 id="knowledgeHeader" style="display:none">📘 Knowledge Tree</h3>
-    <div id="knowledgeContent" style="overflow-y:auto">
+    <h3 id="knowledgeHeader" style="display:none">📘 Knowledge Tree</h3>
+    <div id="knowledgeContent" style="overflow:auto">
       <div id="aboutMrE">
-        <p><strong>I am Gov. Umo Eno AI</strong></p>
-        <p>Your friendly AI tutor! 🌟<br>
-           I’ll help you learn step by step. Feel free to interrupt,<br>
-           ask questions and relax!</p>
+        <p><strong>I am Gov. Umo Eno AI</strong></p>
+        <p>Your friendly AI tutor! 🌟<br>I’ll help you learn step by step.<br>Feel free to interrupt, ask questions and relax!</p>
         <p><strong>Abasi Sosong O!</strong></p>
       </div>
       <div id="treeContents" style="margin-top:.8rem"></div>
@@ -136,17 +95,14 @@ button{
     </div>
   </aside>
 
-  <!-- CHAT COLUMN -->
   <div id="chatBoxWrapper"><div id="chat"></div></div>
 
-  <!-- RIGHT SIDEBAR -->
   <aside id="visuals">
-    <h3>🔍 Topic visuals</h3>
-    <p>Coming soon.</p>
+    <h3>🔍 Topic visuals</h3>
+    <p>Coming soon.</p>
   </aside>
 </main>
 
-<!-- INPUT BAR -->
 <form id="chat-form">
   <textarea id="messageInput" placeholder="Type your message..." required></textarea>
   <div id="controls">
@@ -158,129 +114,85 @@ button{
   </div>
 </form>
 
-<!-- SCRIPT -->
 <script>
-/* ---------- DOM REFS ---------- */
-const chatBox       = document.getElementById('chat');
-const form          = document.getElementById('chat-form');
-const input         = document.getElementById('messageInput');
-const micButton     = document.getElementById('micButton');
-const clearButton   = document.getElementById('clearButton');
-const speakToggle   = document.getElementById('speakToggle');
+/* ---------- DOM ---------- */
+const chatBox=document.getElementById('chat');
+const form=document.getElementById('chat-form');
+const input=document.getElementById('messageInput');
+const micBtn=document.getElementById('micButton');
+const clearBtn=document.getElementById('clearButton');
+const speakToggle=document.getElementById('speakToggle');
 
 /* ---------- STATE ---------- */
-let conversation = [], studentName = '', thinkingRow = null;
+let history=[],student='',thinking=null;
 
-/* ---------- UTILITIES ---------- */
-function burstConfetti(){
-  const el=document.createElement('div');
-  el.id='cssConfetti'; el.textContent='🎉';
-  document.body.appendChild(el);
-  setTimeout(()=>el.remove(),1400);
-}
-function speak(text){
-  if(!speakToggle.checked) return;
-  const u=new SpeechSynthesisUtterance(text);
-  u.lang='en-NG';u.rate=1;u.pitch=1;speechSynthesis.speak(u);
-}
-
-/* ---------- ADD MESSAGE ---------- */
-function addMessage(content, role){
+/* ---------- HELPERS ---------- */
+function addMsg(text,role){
   const row=document.createElement('div');row.className=`message-row ${role}`;
-  const avatar=document.createElement('div');avatar.className=`avatar ${role}`;
-  const bubble=document.createElement('div');bubble.className=`bubble ${role}`;
-  bubble.innerHTML=content.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>');
-  if(role==='user')bubble.setAttribute('data-name',studentName||'');
-  row.appendChild(role==='assistant'?avatar:bubble);
-  row.appendChild(role==='assistant'?bubble:avatar);
-  chatBox.appendChild(row);
-  chatBox.scrollTop=chatBox.scrollHeight;
-  return row;
+  const av=document.createElement('div');av.className=`avatar ${role}`;
+  const bub=document.createElement('div');bub.className=`bubble ${role}`;
+  bub.innerHTML=text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>');
+  if(role==='user')bub.setAttribute('data-name',student);
+  row.append(role==='assistant'?av:bub,role==='assistant'?bub:av);
+  chatBox.appendChild(row);chatBox.scrollTop=chatBox.scrollHeight;
 }
+function speak(txt){if(!speakToggle.checked)return;const u=new SpeechSynthesisUtterance(txt);u.lang='en-NG';speechSynthesis.speak(u);}
+function confetti(){const el=document.createElement('div');el.id='cssConfetti';el.textContent='🎉';document.body.append(el);setTimeout(()=>el.remove(),1300);}
 
-/* ---------- PROGRESS BAR (unchanged logic) ---------- */
-function updateProgressBar(state='⬜', mastered=0, total){
-  const pv=document.getElementById('progressVisual');
-  const pf=document.getElementById('progressFeedback');
-  if(total===undefined) total=(state.match(/🟢|🟧|⬜/g)||[]).length;
-  pv.textContent=`🧠 Progress: ${state} (${mastered}/${total} mastered!)`;
-  pf.textContent= mastered===0?"Let's begin your learning journey! 🚀":
-      mastered===total?"Woohoo! 🎉 You've completed the topic!":
-      "Great job! Keep going, you're doing well! 🌟";
-}
-function updateProgressBarFromMessage(msg){
-  const m=msg.match(/🧠 Progress:\\s*(.*?)\\s*\\((\\d+)\\/(\\d+)/);
-  if(m){const[,state,done,total]=m;updateProgressBar(state,+done,+total);}
-  if(/You\\s+MASTERED/i.test(msg)){burstConfetti();}
+/* ---------- PROGRESS BAR ---------- */
+function progBar(state='⬜',done=0,total){if(!total)total=(state.match(/🟢|🟧|⬜/g)||[]).length;
+  document.getElementById('progressVisual').textContent=`🧠 Progress: ${state} (${done}/${total} mastered!)`;
+  document.getElementById('progressFeedback').textContent=done===0?"Let's begin! 🚀":done===total?"Woohoo 🎉 Topic mastered!":"Great job! Keep going 🌟";
 }
 
 /* ---------- KNOWLEDGE TREE ---------- */
-function updateKnowledgeTreeInSidebar(txt){
-  const lines=txt.split('\\n').filter(l=>/^\\d+\\./.test(l));
-  if(!lines.length) return;
+function setTree(txt){
+  const lines=txt.split('\n').filter(l=>/^\d+\./.test(l));
+  if(!lines.length)return;
   document.getElementById('knowledgeHeader').style.display='block';
   document.getElementById('aboutMrE').style.display='none';
-  document.getElementById('treeContents').innerHTML=
-    '<ol style=\"padding-left:1rem\">'+lines.map(l=>`<li>${l.replace(/^\\d+\\.\\s*/,'')}</li>`).join('')+'</ol>';
-  updateProgressBar('⬜'.repeat(lines.length),0,lines.length);
+  document.getElementById('treeContents').innerHTML='<ol style="padding-left:1rem">'+lines.map(l=>`<li>${l.replace(/^\d+\.\s*/,'')}</li>`).join('')+'</ol>';
+  progBar('⬜'.repeat(lines.length),0,lines.length);
 }
 
-/* ---------- ASSISTANT REPLY ---------- */
-function handleAssistantReply(reply){
-  addMessage(reply,'assistant');speak(reply);
-  const idx=reply.indexOf('Knowledge Tree:');
-  if(idx!==-1)updateKnowledgeTreeInSidebar(reply.slice(idx).split('\\n').slice(1).join('\\n'));
-  updateProgressBarFromMessage(reply);
+/* ---------- HANDLE ASSISTANT ---------- */
+function handleAI(reply){
+  addMsg(reply,'assistant');speak(reply);
+  const i=reply.indexOf('Knowledge Tree:');if(i!==-1)setTree(reply.slice(i).split('\n').slice(1).join('\n'));
+  const m=reply.match(/🧠 Progress:\s*(.*?)\s*\((\d+)\/(\d+)/);
+  if(m)progBar(m[1],+m[2],+m[3]);if(/You\s+MASTERED/i.test(reply))confetti();
 }
 
-/* ---------- SEND MESSAGE ---------- */
-async function sendMessage(msg){
-  if(!studentName&&/my name is (\\w+)/i.test(msg))studentName=msg.match(/my name is (\\w+)/i)[1];
-  conversation.push({role:'user',content:msg});addMessage(msg,'user');
-  thinkingRow=addMessage('💭 Gov. is thinking...','assistant');
+/* ---------- SEND ---------- */
+async function send(msg){
+  if(!student&&/my name is (\w+)/i.test(msg))student=msg.match(/my name is (\w+)/i)[1];
+  history.push({role:'user',content:msg});addMsg(msg,'user');
+  thinking=addMsg('💭 Gov. is thinking...','assistant');
   try{
-    const res=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({conversation})});
-    const data=await res.json();let reply=data.message||'';
-    reply=reply.replace(/Do you understand\\?.*?/gi,'Do you understand?');
-    conversation.push({role:'assistant',content:reply});
-    thinkingRow.remove();handleAssistantReply(reply);
-  }catch{thinkingRow.remove();addMessage('⚠️ Something went wrong. Try again later.','assistant');}
+    const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({conversation:history})});
+    const j=await r.json();let rep=j.message||'';rep=rep.replace(/Do you understand\?.*?/gi,'Do you understand?');
+    history.push({role:'assistant',content:rep});thinking.remove();handleAI(rep);
+  }catch{thinking.remove();addMsg('⚠️ Something went wrong','assistant');}
 }
 
-/* ---------- INITIAL WELCOME ---------- */
-document.addEventListener('DOMContentLoaded',()=>{
-  setTimeout(()=>{
-    const intro='Welcome 🎉 What’s your name, grade, and what topic would you like to learn today?';
-    conversation.push({role:'assistant',content:intro});addMessage(intro,'assistant');
-  },200);
-});
+/* ---------- INIT ---------- */
+document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>{
+  const intro='Welcome 🎉 What’s your name, grade, and what topic would you like to learn today?';
+  history.push({role:'assistant',content:intro});addMsg(intro,'assistant');
+},200));
 
-/* ---------- FORM HANDLERS ---------- */
-form.addEventListener('submit',e=>{
-  e.preventDefault();const msg=input.value.trim();
-  if(msg){input.value='';sendMessage(msg);}
-});
-input.addEventListener('keydown',e=>{
-  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();form.dispatchEvent(new Event('submit'));}
-});
-input.addEventListener('input',()=>{
-  input.style.height='auto';input.style.height=input.scrollHeight+'px';
-});
-clearButton.addEventListener('click',()=>{
-  conversation=[];chatBox.innerHTML='';studentName='';document.dispatchEvent(new Event('DOMContentLoaded'));
-});
+/* ---------- EVENTS ---------- */
+form.onsubmit=e=>{e.preventDefault();if(input.value.trim()){send(input.value.trim());input.value='';}};
+input.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();form.requestSubmit();}}
+input.oninput=()=>{input.style.height='auto';input.style.height=input.scrollHeight+'px';}
+clearBtn.onclick=()=>{history=[];chatBox.innerHTML='';student='';document.dispatchEvent(new Event('DOMContentLoaded'));}
 
-/* ---------- VOICE INPUT ---------- */
-const recognition='webkitSpeechRecognition'in window?new webkitSpeechRecognition():null;
-if(recognition){
-  recognition.lang='en-NG';recognition.continuous=false;recognition.interimResults=true;
-  micButton.addEventListener('click',()=>{recognition.start();micButton.textContent='🎙️'});
-  recognition.onresult=e=>{
-    let t='';for(let i=e.resultIndex;i<e.results.length;++i){if(e.results[i].isFinal)t+=e.results[i][0].transcript;}
-    if(t.trim()){input.value=t;sendMessage(t);input.value='';}micButton.textContent='🎤';
-  };
-  recognition.onerror=recognition.onend=()=>{micButton.textContent='🎤'};
-}else{micButton.disabled=true;micButton.title='Voice input not supported.';}
+/* ---------- VOICE ---------- */
+const rec='webkitSpeechRecognition'in window?new webkitSpeechRecognition():null;
+if(rec){rec.lang='en-NG';micBtn.onclick=()=>{rec.start();micBtn.textContent='🎙️'};rec.onresult=e=>{
+  let t='';for(let i=e.resultIndex;i<e.results.length;++i)if(e.results[i].isFinal)t+=e.results[i][0].transcript;
+  if(t.trim()){send(t.trim());input.value='';}micBtn.textContent='🎤';};rec.onerror=rec.onend=()=>micBtn.textContent='🎤';}
+else{micBtn.disabled=true;micBtn.title='Voice unsupported';}
 </script>
 </body>
 </html>
