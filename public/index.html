@@ -208,42 +208,53 @@ function setTree(txt){
 
 /* ---------- HANDLE ASSISTANT ---------- */
 function handleAI(reply) {
-  // 1. Extract image URLs (including "Image:" prefix)
-  const imgRegex = /(?:Image:\s*)(https?:\/\/\S+\.(?:png|jpe?g|gif|svg))/gi;
-  const imgUrls = [];
+  // 1) Extract media first and clean the message
   let cleanReply = reply;
   
-  // Find and remove all image references
-  let match;
-  while ((match = imgRegex.exec(reply)) {
-    imgUrls.push(match[1]);
+  // Extract image URLs
+  const imgUrls = [];
+  const imgMatches = reply.matchAll(/https?:\/\/\S+\.(?:png|jpe?g|gif)/gi);
+  for (const match of imgMatches) {
+    imgUrls.push(match[0]);
     cleanReply = cleanReply.replace(match[0], '');
   }
 
-  // 2. Clean up empty lines left by removed images
-  cleanReply = cleanReply
-    .replace(/\n\s*\n/g, '\n') // Remove empty lines
-    .trim();
+  // Extract YouTube IDs
+  const ytIds = [];
+  const ytMatches = reply.matchAll(/youtu(?:be\.com\/watch\?v=|\.be\/)([\w-]+)/gi);
+  for (const match of ytMatches) {
+    ytIds.push(match[1]);
+    cleanReply = cleanReply.replace(match[0], '');
+  }
 
-  // 3. Show cleaned message in chat
+  // Remove empty lines and trim
+  cleanReply = cleanReply.replace(/^\s*[\r\n]/gm, '').trim();
+
+  // 2) Show cleaned message in chat
   addMsg(cleanReply, 'assistant');
   speak(cleanReply);
 
-  // 4. Update visuals sidebar
+  // 3) Update visuals sidebar
   const visuals = document.getElementById('visuals');
   visuals.innerHTML = '<h3>🔍 Topic visuals</h3>';
   
-  // Add images to sidebar
+  // Add images
   imgUrls.forEach(url => {
     const img = document.createElement('img');
     img.src = url;
-    img.style.cssText = `
-      width: 100%;
-      border-radius: 8px;
-      margin: 12px 0;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    `;
+    img.style = 'width:100%;border-radius:8px;margin:8px 0;';
     visuals.appendChild(img);
+  });
+
+  // Add YouTube embeds
+  ytIds.forEach(id => {
+    const frame = document.createElement('iframe');
+    frame.width = '100%';
+    frame.height = '200';
+    frame.src = `https://www.youtube.com/embed/${id}`;
+    frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+    frame.style = 'border-radius:8px;margin:8px 0;aspect-ratio:16/9;';
+    visuals.appendChild(frame);
   });
 
   // ====== 3-5) Existing logic below (UNCHANGED) ======
