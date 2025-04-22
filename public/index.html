@@ -116,105 +116,159 @@ button{background:#2563eb;color:#fff;border:none;border-radius:10px;
 
 <script>
 /* ---------- DOM ---------- */
-const chatBox=document.getElementById('chat');
-const form=document.getElementById('chat-form');
-const input=document.getElementById('messageInput');
-const micBtn=document.getElementById('micButton');
-const clearBtn=document.getElementById('clearButton');
-const speakToggle=document.getElementById('speakToggle');
+const chatBox = document.getElementById('chat');
+const form    = document.getElementById('chat-form');
+const input   = document.getElementById('messageInput');
+const micBtn  = document.getElementById('micButton');
+const clearBtn= document.getElementById('clearButton');
+const speakToggle = document.getElementById('speakToggle');
 
 /* ---------- STATE ---------- */
-let history=[],student='',thinking=null;
+let history = [];
+let student = '';
+let thinking = null;
+let totalNodes = 0;         /* <‑‑‑ added */
 
 /* ---------- HELPERS ---------- */
-function addMsg(text,role){
-  const row=document.createElement('div');row.className=`message-row ${role}`;
-  const av=document.createElement('div');av.className=`avatar ${role}`;
-  const bub=document.createElement('div');bub.className=`bubble ${role}`;
-  bub.innerHTML=text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>');
-  if(role==='user')bub.setAttribute('data-name',student);
-  row.append(role==='assistant'?av:bub,role==='assistant'?bub:av);
-  chatBox.appendChild(row);chatBox.scrollTop=chatBox.scrollHeight;
+function addMsg(text, role){
+  const row = document.createElement('div'); row.className = `message-row ${role}`;
+  const av  = document.createElement('div'); av.className  = `avatar ${role}`;
+  const bub = document.createElement('div'); bub.className = `bubble ${role}`;
+  bub.innerHTML = text
+      .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g,'<em>$1</em>');
+  if (role==='user') bub.setAttribute('data-name', student);
+  row.append(role==='assistant'?av:bub, role==='assistant'?bub:av);
+  chatBox.appendChild(row); chatBox.scrollTop = chatBox.scrollHeight;
 }
-function speak(txt){if(!speakToggle.checked)return;const u=new SpeechSynthesisUtterance(txt);u.lang='en-NG';speechSynthesis.speak(u);}
-function confetti(){const el=document.createElement('div');el.id='cssConfetti';el.textContent='🎉';document.body.append(el);setTimeout(()=>el.remove(),1300);}
+function speak(t){ if(!speakToggle.checked) return;
+  const u = new SpeechSynthesisUtterance(t); u.lang='en-NG'; speechSynthesis.speak(u); }
+function confetti(){ const d=document.createElement('div'); d.id='cssConfetti'; d.textContent='🎉';
+  document.body.append(d); setTimeout(()=>d.remove(),1300); }
 
 /* ---------- PROGRESS BAR ---------- */
-function progBar(state='⬜',done=0,total){if(!total)total=(state.match(/🟢|🟧|⬜/g)||[]).length;
-  document.getElementById('progressVisual').textContent=`🧠 Progress: ${state} (${done}/${total} mastered!)`;
-  document.getElementById('progressFeedback').textContent=done===0?"Let's begin! 🚀":done===total?"Woohoo 🎉 Topic mastered!":"Great job! Keep going 🌟";
+function progBar(state='⬜', done=0, total){
+  if(!total) total = (state.match(/🟢|🟧|⬜/g)||[]).length;
+  document.getElementById('progressVisual').textContent =
+      `🧠 Progress: ${state} (${done}/${total} mastered!)`;
+  document.getElementById('progressFeedback').textContent =
+      done===0 ? "Let's begin! 🚀" :
+      done===total ? "Woohoo 🎉 Topic mastered!" :
+      "Great job! Keep going 🌟";
 }
 
 /* ---------- KNOWLEDGE TREE ---------- */
 function setTree(txt){
-  const lines=txt.split('\n').filter(l=>/^\d+\./.test(l));
-  if(!lines.length)return;
+  const lines = txt.split('\n').filter(l=>/^\d+\./.test(l));
+  if(!lines.length) return;
   document.getElementById('knowledgeHeader').style.display='block';
   document.getElementById('aboutMrE').style.display='none';
-  document.getElementById('treeContents').innerHTML='<ol style="padding-left:1rem">'+lines.map(l=>`<li>${l.replace(/^\d+\.\s*/,'')}</li>`).join('')+'</ol>';
+  document.getElementById('treeContents').innerHTML =
+      '<ol style="padding-left:1rem">'+
+      lines.map(l=>`<li>${l.replace(/^\d+\.\s*/,'')}</li>`).join('')+'</ol>';
   totalNodes = lines.length;
   progBar('⬜'.repeat(totalNodes), 0, totalNodes);
 }
 
 /* ---------- HANDLE ASSISTANT ---------- */
 function handleAI(reply){
-  // 1 show bubble & speech
-  addMsg(reply,'assistant');
-  speak(reply);
+  addMsg(reply,'assistant'); speak(reply);
 
-  // 2 knowledge tree
   const idx = reply.indexOf('Knowledge Tree:');
-  if (idx !== -1){
-    const treeText = reply.slice(idx).split('\n').slice(1).join('\n');
-    setTree(treeText);
+  if(idx !== -1){
+    const tree = reply.slice(idx).split('\n').slice(1).join('\n');
+    setTree(tree);
   }
 
-  // 3 progress‑bar  (tolerant: just grab the circle‑string)
-const found = reply.match(/([🟢🟧⬜]{3,})/);
-if (found){
-  let state = found[1];
-  if (totalNodes && state.length < totalNodes){
-    state = state.padEnd(totalNodes, '⬜'); // add blanks to match tree
+  const m = reply.match(/([🟢🟧⬜]{3,})/);
+  if(m){
+    let state = m[1];
+    if(totalNodes && state.length < totalNodes)
+        state = state.padEnd(totalNodes,'⬜');
+    const mastered = (state.match(/🟢/g)||[]).length;
+    progBar(state, mastered, totalNodes || state.length);
   }
-  const mastered = (state.match(/🟢/g) || []).length;
-  progBar(state, mastered, totalNodes || state.length);
+
+  if(/You\s+MASTERED/i.test(reply)) confetti();
 }
-
-  // 4 confetti on final mastery
-  if (/You\s+MASTERED/i.test(reply)) confetti();
-}   //  <‑‑‑‑‑ this closing brace was missing
-
 
 /* ---------- SEND ---------- */
 async function send(msg){
-  if(!student&&/my name is (\w+)/i.test(msg))student=msg.match(/my name is (\w+)/i)[1];
-  history.push({role:'user',content:msg});addMsg(msg,'user');
-  thinking=addMsg('💭 Gov. is thinking...','assistant');
+  if(!student && /my name is (\w+)/i.test(msg))
+      student = msg.match(/my name is (\w+)/i)[1];
+
+  history.push({role:'user',content:msg});
+  addMsg(msg,'user');
+
+  thinking = addMsg('💭 Gov. is thinking...','assistant');
+
   try{
-    const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({conversation:history})});
-    const j=await r.json();let rep=j.message||'';rep=rep.replace(/Do you understand\?.*?/gi,'Do you understand?');
-    history.push({role:'assistant',content:rep});if (thinking) { thinking.remove(); thinking = null; } handleAI(rep);
-  }catch{if (thinking) { thinking.remove(); thinking = null; };addMsg('⚠️ Something went wrong','assistant');}
+    const res = await fetch('/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({conversation:history})
+    });
+    const data = await res.json();
+    let rep = data.message || '';
+    rep = rep.replace(/Do you understand\?.*?/gi,'Do you understand?');
+
+    history.push({role:'assistant',content:rep});
+    if(thinking){ thinking.remove(); thinking = null; }
+    handleAI(rep);
+
+  }catch{
+    if(thinking){ thinking.remove(); thinking = null; }
+    addMsg('⚠️ Something went wrong','assistant');
+  }
 }
 
 /* ---------- INIT ---------- */
-document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>{
-  const intro='Welcome 🎉 What’s your name, grade, and what topic would you like to learn today?';
-  history.push({role:'assistant',content:intro});addMsg(intro,'assistant');
-},200));
+document.addEventListener('DOMContentLoaded',()=>{
+  setTimeout(()=>{
+    const intro="Welcome 🎉 What’s your name, grade, and what topic would you like to learn today?";
+    history.push({role:'assistant',content:intro});
+    addMsg(intro,'assistant');
+  },200);
+});
 
 /* ---------- EVENTS ---------- */
-form.onsubmit=e=>{e.preventDefault();if(input.value.trim()){send(input.value.trim());input.value='';}};
-input.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();form.requestSubmit();}}
-input.oninput=()=>{input.style.height='auto';input.style.height=input.scrollHeight+'px';}
-clearBtn.onclick=()=>{history=[];chatBox.innerHTML='';student='';document.dispatchEvent(new Event('DOMContentLoaded'));}
+form.onsubmit = e=>{
+  e.preventDefault();
+  if(input.value.trim()){
+    send(input.value.trim());
+    input.value='';
+  }
+};
+input.onkeydown = e=>{
+  if(e.key==='Enter' && !e.shiftKey){
+    e.preventDefault();
+    form.requestSubmit();
+  }
+};
+input.oninput = ()=>{
+  input.style.height='auto';
+  input.style.height = input.scrollHeight+'px';
+};
+clearBtn.onclick = ()=>{
+  history=[]; chatBox.innerHTML=''; student='';
+  document.dispatchEvent(new Event('DOMContentLoaded'));
+};
 
 /* ---------- VOICE ---------- */
-const rec='webkitSpeechRecognition'in window?new webkitSpeechRecognition():null;
-if(rec){rec.lang='en-NG';micBtn.onclick=()=>{rec.start();micBtn.textContent='🎙️'};rec.onresult=e=>{
-  let t='';for(let i=e.resultIndex;i<e.results.length;++i)if(e.results[i].isFinal)t+=e.results[i][0].transcript;
-  if(t.trim()){send(t.trim());input.value='';}micBtn.textContent='🎤';};rec.onerror=rec.onend=()=>micBtn.textContent='🎤';}
-else{micBtn.disabled=true;micBtn.title='Voice unsupported';}
+const rec = 'webkitSpeechRecognition' in window ? new webkitSpeechRecognition() : null;
+if(rec){
+  rec.lang='en-NG';
+  micBtn.onclick=()=>{ rec.start(); micBtn.textContent='🎙️'; };
+  rec.onresult=e=>{
+    let t=''; for(let i=e.resultIndex;i<e.results.length;++i)
+      if(e.results[i].isFinal) t+=e.results[i][0].transcript;
+    if(t.trim()){ send(t.trim()); input.value=''; }
+    micBtn.textContent='🎤';
+  };
+  rec.onerror = rec.onend = ()=> micBtn.textContent='🎤';
+}else{
+  micBtn.disabled=true; micBtn.title='Voice unsupported';
+}
 </script>
 </body>
 </html>
