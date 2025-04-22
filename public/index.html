@@ -173,25 +173,59 @@ function setTree(txt){
 }
 
 /* ---------- HANDLE ASSISTANT ---------- */
-function handleAI(reply){
-  addMsg(reply,'assistant'); speak(reply);
+function handleAI(reply) {
+  // 1) Show the assistant’s reply in chat and speak it aloud
+  addMsg(reply, 'assistant');
+  speak(reply);
 
-  const idx = reply.indexOf('Knowledge Tree:');
-  if(idx !== -1){
-    const tree = reply.slice(idx).split('\n').slice(1).join('\n');
-    setTree(tree);
+  // 2) Embed any image or YouTube link into the visuals sidebar
+  const visuals = document.getElementById('visuals');
+  visuals.innerHTML = '<h3>🔍 Topic visuals</h3>'; // reset
+
+  // 2a) Image URLs (png, jpg, gif)
+  const imgMatch = reply.match(/(https?:\/\/\S+\.(?:png|jpe?g|gif))/i);
+  if (imgMatch) {
+    const img = document.createElement('img');
+    img.src = imgMatch[1];
+    img.style.cssText = 'width:100%;border-radius:8px;margin-top:8px;';
+    visuals.appendChild(img);
   }
 
+  // 2b) YouTube links
+  const ytMatch = reply.match(/youtu(?:be\.com\/watch\?v=|\.be\/)([\w-]+)/i);
+  if (ytMatch) {
+    const iframe = document.createElement('iframe');
+    iframe.width = '100%';
+    iframe.height = '200';
+    iframe.src = `https://www.youtube.com/embed/${ytMatch[1]}`;
+    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+    iframe.setAttribute('allowfullscreen', '');
+    iframe.style.cssText = 'margin-top:8px;border-radius:8px;';
+    visuals.appendChild(iframe);
+  }
+
+  // 3) Update Knowledge Tree if present
+  const idx = reply.indexOf('Knowledge Tree:');
+  if (idx !== -1) {
+    const treeText = reply.slice(idx).split('\n').slice(1).join('\n');
+    setTree(treeText);
+  }
+
+  // 4) Update progress bar (tolerant matching of circle emojis)
   const m = reply.match(/([🟢🟧⬜]{3,})/);
-  if(m){
+  if (m) {
     let state = m[1];
-    if(totalNodes && state.length < totalNodes)
-        state = state.padEnd(totalNodes,'⬜');
-    const mastered = (state.match(/🟢/g)||[]).length;
+    if (totalNodes && state.length < totalNodes) {
+      state = state.padEnd(totalNodes, '⬜');
+    }
+    const mastered = (state.match(/🟢/g) || []).length;
     progBar(state, mastered, totalNodes || state.length);
   }
 
-  if(/You\s+MASTERED/i.test(reply)) confetti();
+  // 5) Celebrate final mastery
+  if (/You\s+MASTERED/i.test(reply)) {
+    confetti();
+  }
 }
 
 /* ---------- SEND ---------- */
