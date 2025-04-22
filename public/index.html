@@ -208,44 +208,53 @@ function setTree(txt){
 
 /* ---------- HANDLE ASSISTANT ---------- */
 function handleAI(reply) {
-  // ====== NEW: Extract media first & clean reply ======
-  const imgUrls = reply.match(/(?:Image:|!\[.*?\]\()(https?:\/\/\S+\.(?:png|jpe?g|gif|svg))/gi) || [];
-  const ytUrls = reply.match(/(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/watch\?v=)([\w-]+)/gi) || [];
-  
-  // Create media-free message for chat
+  // 1) Extract media first and clean the message
   let cleanReply = reply;
-  imgUrls.forEach(url => cleanReply = cleanReply.replace(url, ''));
-  ytUrls.forEach(url => cleanReply = cleanReply.replace(url, ''));
-  cleanReply = cleanReply.replace(/(Image:|!\[.*?\]\()/gi, '').trim();
+  
+  // Extract image URLs
+  const imgUrls = [];
+  const imgMatches = reply.matchAll(/https?:\/\/\S+\.(?:png|jpe?g|gif)/gi);
+  for (const match of imgMatches) {
+    imgUrls.push(match[0]);
+    cleanReply = cleanReply.replace(match[0], '');
+  }
 
-  // ====== 1) Show CLEANED reply in chat ======
+  // Extract YouTube IDs
+  const ytIds = [];
+  const ytMatches = reply.matchAll(/youtu(?:be\.com\/watch\?v=|\.be\/)([\w-]+)/gi);
+  for (const match of ytMatches) {
+    ytIds.push(match[1]);
+    cleanReply = cleanReply.replace(match[0], '');
+  }
+
+  // Remove empty lines and trim
+  cleanReply = cleanReply.replace(/^\s*[\r\n]/gm, '').trim();
+
+  // 2) Show cleaned message in chat
   addMsg(cleanReply, 'assistant');
   speak(cleanReply);
 
-  // ====== 2) Existing sidebar logic (unchanged) ======
+  // 3) Update visuals sidebar
   const visuals = document.getElementById('visuals');
   visuals.innerHTML = '<h3>🔍 Topic visuals</h3>';
   
-  // Process images
+  // Add images
   imgUrls.forEach(url => {
-    const cleanUrl = url.replace(/(Image: |!\[.*?\]\()/i, '');
     const img = document.createElement('img');
-    img.src = cleanUrl;
-    img.style.cssText = 'width:100%; border-radius:8px; margin:8px 0;';
-    img.loading = 'lazy';
+    img.src = url;
+    img.style = 'width:100%;border-radius:8px;margin:8px 0;';
     visuals.appendChild(img);
   });
 
-  // Process YouTube
-  ytUrls.forEach(ytUrl => {
-    const videoId = ytUrl.split(/\/|v=|\?/).pop();
-    const iframe = document.createElement('iframe');
-    iframe.width = '100%';
-    iframe.height = '200';
-    iframe.src = `https://www.youtube.com/embed/${videoId}`;
-    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-    iframe.style.cssText = 'margin:8px 0; border-radius:8px; aspect-ratio:16/9;';
-    visuals.appendChild(iframe);
+  // Add YouTube embeds
+  ytIds.forEach(id => {
+    const frame = document.createElement('iframe');
+    frame.width = '100%';
+    frame.height = '200';
+    frame.src = `https://www.youtube.com/embed/${id}`;
+    frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+    frame.style = 'border-radius:8px;margin:8px 0;aspect-ratio:16/9;';
+    visuals.appendChild(frame);
   });
 
   // ====== 3-5) Existing logic below (UNCHANGED) ======
