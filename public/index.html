@@ -163,6 +163,9 @@ function progBar(state='⬜', done=0, total){
 function setTree(txt){
   const lines = txt.split('\n').filter(l=>/^\d+\./.test(l));
   if(!lines.length) return;
+  if (totalNodes === 0) {
+    totalNodes = lines.length;
+  }
   document.getElementById('knowledgeHeader').style.display='block';
   document.getElementById('aboutMrE').style.display='none';
   document.getElementById('treeContents').innerHTML =
