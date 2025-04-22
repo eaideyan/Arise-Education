@@ -140,7 +140,7 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
   contents: formattedMessages,
-  generationConfig: { temperature: 0.3 }   // 0 = deterministic, 1 = creative
+  generationConfig: { temperature: 0.5 }   // 0 = deterministic, 1 = creative
 }),
       }
     );
