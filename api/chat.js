@@ -95,6 +95,13 @@ Emit on pause/exit:
   – JSS/SSS ≤ 20 words.  
 ✓ Localised examples always.  
 ✓ Concise formatting with clear paragraphs.
+
+When a concept would benefit from a picture or short video, please always include
+A single direct image URL ending in .png, .jpg, or .gif
+Optionally, but rerely a short YouTube watch link (youtube.com/watch?v=… or youtu.be/…)
+Format:
+Image: https://…example.png
+Video: https://www.youtube.com/watch?v=abc123XYZ
 `.trim();
 
 export default async function handler(req, res) {
