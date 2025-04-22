@@ -45,6 +45,23 @@ aside,
 #visuals h3 {
   margin-bottom: 0.3rem;
 }
+  overflow-y: auto; /* Add this line */
+  gap: 0.5rem;     /* Add this line */
+}
+
+/* Add these new rules below */
+#visuals img, 
+#visuals iframe {
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  margin: 8px 0;
+}
+
+#visuals iframe {
+  aspect-ratio: 16/9;
+  height: auto;
+}
 
 /* ---------- CHAT ---------- */
 #chatBoxWrapper{flex:2.5;background:#fff;border-radius:16px;
