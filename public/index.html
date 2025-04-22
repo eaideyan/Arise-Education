@@ -139,7 +139,9 @@ function addMsg(text, role){
       .replace(/\*(.*?)\*/g,'<em>$1</em>');
   if (role==='user') bub.setAttribute('data-name', student);
   row.append(role==='assistant'?av:bub, role==='assistant'?bub:av);
-  chatBox.appendChild(row); chatBox.scrollTop = chatBox.scrollHeight;
+  chatBox.appendChild(row);
+  chatBox.scrollTop = chatBox.scrollHeight;
+  return row; // Return the created element
 }
 function speak(t){ if(!speakToggle.checked) return;
   const u = new SpeechSynthesisUtterance(t); u.lang='en-NG'; speechSynthesis.speak(u); }
