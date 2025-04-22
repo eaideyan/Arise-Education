@@ -195,31 +195,33 @@ function handleAI(reply) {
   addMsg(reply, 'assistant');
   speak(reply);
 
-  // 2) Embed any image or YouTube link into the visuals sidebar
+// 2) Embed images/videos in visuals sidebar
   const visuals = document.getElementById('visuals');
-  visuals.innerHTML = '<h3>🔍 Topic visuals</h3>'; // reset
+  visuals.innerHTML = '<h3>🔍 Topic visuals</h3>'; // Reset
 
-  // 2a) Image URLs (png, jpg, gif)
-  const imgMatch = reply.match(/(https?:\/\/\S+\.(?:png|jpe?g|gif))/i);
-  if (imgMatch) {
+  // 2a) Improved image detection (supports Markdown-style "Image: URL")
+  const imgUrls = reply.match(/(?:Image:|!\[.*?\]\()(https?:\/\/\S+\.(?:png|jpe?g|gif|svg))/gi) || [];
+  imgUrls.forEach(url => {
+    const cleanUrl = url.replace(/(Image: |!\[.*?\]\()/i, '');
     const img = document.createElement('img');
-    img.src = imgMatch[1];
-    img.style.cssText = 'width:100%;border-radius:8px;margin-top:8px;';
+    img.src = cleanUrl;
+    img.style.cssText = 'width:100%; border-radius:8px; margin:8px 0;';
+    img.loading = 'lazy';
     visuals.appendChild(img);
-  }
+  });
 
-  // 2b) YouTube links
-  const ytMatch = reply.match(/youtu(?:be\.com\/watch\?v=|\.be\/)([\w-]+)/i);
-  if (ytMatch) {
+  // 2b) Improved YouTube detection
+  const ytUrls = reply.match(/(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/watch\?v=)([\w-]+)/gi) || [];
+  ytUrls.forEach(ytUrl => {
+    const videoId = ytUrl.split(/\/|v=|\?/).pop();
     const iframe = document.createElement('iframe');
     iframe.width = '100%';
     iframe.height = '200';
-    iframe.src = `https://www.youtube.com/embed/${ytMatch[1]}`;
+    iframe.src = `https://www.youtube.com/embed/${videoId}`;
     iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-    iframe.setAttribute('allowfullscreen', '');
-    iframe.style.cssText = 'margin-top:8px;border-radius:8px;';
+    iframe.style.cssText = 'margin:8px 0; border-radius:8px; aspect-ratio:16/9;';
     visuals.appendChild(iframe);
-  }
+  });
 
   // 3) Update Knowledge Tree if present
   const idx = reply.indexOf('Knowledge Tree:');
