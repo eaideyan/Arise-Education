@@ -340,28 +340,25 @@ async function send(msg) {
   }
 }
 
-/* ---------- INIT (FIXED) ---------- */
-function initChat() {
-  // Clear existing state FIRST
-  history = [];
-  student = '';
-  totalNodes = 0;
-  chatBox.innerHTML = '';
-  
-  // Reset UI components
-  document.getElementById('visuals').innerHTML = '<h3>🔍 Topic visuals</h3>';
-  document.getElementById('knowledgeHeader').style.display = 'none';
-  document.getElementById('aboutMrE').style.display = 'block';
-  document.getElementById('treeContents').innerHTML = '';
-  progBar('⬜', 0, 0);
+  /* ---------- INIT ---------- */
+    function initChat() {
+      history = []; student = ''; totalNodes = 0;
+      chatBox.innerHTML = '';
+      document.getElementById('visuals').innerHTML = '<h3>🔍 Topic visuals</h3>';
+      document.getElementById('knowledgeHeader').style.display = 'none';
+      document.getElementById('aboutMrE').style.display = 'block';
+      document.getElementById('treeContents').innerHTML = '';
+      progBar('⬜', 0, 0);
 
-  // IMMEDIATELY add welcome message (no setTimeout)
-  addMsg("Welcome 🎉 What’s your name, grade, and what topic would you like to learn today?", 'assistant');
-}
-
-// Double-binding to ensure it runs
-document.addEventListener('DOMContentLoaded', initChat);
-window.addEventListener('load', initChat);
+      // Guaranteed welcome
+      setTimeout(() => {
+        addMsg(
+          "Welcome 🎉 What’s your name, grade, and what topic would you like to learn today?",
+          'assistant'
+        );
+      }, 300);
+    }
+    document.addEventListener('DOMContentLoaded', initChat);
 
 /* ---------- EVENTS ---------- */
 form.onsubmit = e => {
