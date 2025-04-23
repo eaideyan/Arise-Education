@@ -146,225 +146,266 @@ button{background:#2563eb;color:#fff;border:none;border-radius:10px;
 <script>
 /* ---------- DOM ---------- */
 const chatBox = document.getElementById('chat');
-const form    = document.getElementById('chat-form');
-const input   = document.getElementById('messageInput');
-const micBtn  = document.getElementById('micButton');
-const clearBtn= document.getElementById('clearButton');
+const form = document.getElementById('chat-form');
+const input = document.getElementById('messageInput');
+const micBtn = document.getElementById('micButton');
+const clearBtn = document.getElementById('clearButton');
 const speakToggle = document.getElementById('speakToggle');
 
 /* ---------- STATE ---------- */
 let history = [];
 let student = '';
 let thinking = null;
-let totalNodes = 0;         /* <‑‑‑ added */
+let totalNodes = 0;
 
 /* ---------- HELPERS ---------- */
-function addMsg(text, role){
-  const row = document.createElement('div'); row.className = `message-row ${role}`;
-  const av  = document.createElement('div'); av.className  = `avatar ${role}`;
-  const bub = document.createElement('div'); bub.className = `bubble ${role}`;
+function addMsg(text, role) {
+  const row = document.createElement('div');
+  row.className = `message-row ${role}`;
+  const av = document.createElement('div');
+  av.className = `avatar ${role}`;
+  const bub = document.createElement('div');
+  bub.className = `bubble ${role}`;
+  
   bub.innerHTML = text
-      .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g,'<em>$1</em>');
-  if (role==='user') bub.setAttribute('data-name', student);
-  row.append(role==='assistant'?av:bub, role==='assistant'?bub:av);
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+  if (role === 'user') bub.setAttribute('data-name', student);
+  
+  row.append(role === 'assistant' ? av : bub, role === 'assistant' ? bub : av);
   chatBox.appendChild(row);
   chatBox.scrollTop = chatBox.scrollHeight;
-  return row; // Return the created element
+  return row;
 }
-function speak(t){ if(!speakToggle.checked) return;
-  const u = new SpeechSynthesisUtterance(t); u.lang='en-NG'; speechSynthesis.speak(u); }
-function confetti(){ const d=document.createElement('div'); d.id='cssConfetti'; d.textContent='🎉';
-  document.body.append(d); setTimeout(()=>d.remove(),1300); }
+
+function speak(t) {
+  if (!speakToggle.checked) return;
+  const utterance = new SpeechSynthesisUtterance(t);
+  utterance.lang = 'en-NG';
+  speechSynthesis.speak(utterance);
+}
+
+function confetti() {
+  const d = document.createElement('div');
+  d.id = 'cssConfetti';
+  d.textContent = '🎉';
+  document.body.append(d);
+  setTimeout(() => d.remove(), 1300);
+}
 
 /* ---------- PROGRESS BAR ---------- */
-function progBar(state='⬜', done=0, total){
-  if(!total) total = (state.match(/🟢|🟧|⬜/g)||[]).length;
+function progBar(state = '⬜', done = 0, total = totalNodes) {
   document.getElementById('progressVisual').textContent =
-      `🧠 Progress: ${state} (${done}/${total} mastered!)`;
+    `🧠 Progress: ${state} (${done}/${total} mastered!)`;
   document.getElementById('progressFeedback').textContent =
-      done===0 ? "Let's begin! 🚀" :
-      done===total ? "Woohoo 🎉 Topic mastered!" :
-      "Great job! Keep going 🌟";
+    done === 0 ? "Let's begin! 🚀" :
+    done === total ? "Woohoo 🎉 Topic mastered!" :
+    "Great job! Keep going 🌟";
 }
 
 /* ---------- KNOWLEDGE TREE ---------- */
-function setTree(txt){
-  const lines = txt.split('\n').filter(l=>/^\d+\./.test(l));
-  if(!lines.length) return;
+function setTree(txt) {
+  const lines = txt.split('\n').filter(l => /^\d+\./.test(l));
+  if (!lines.length) return;
+  
+  // Lock totalNodes on first tree load
   if (totalNodes === 0) {
     totalNodes = lines.length;
   }
-  document.getElementById('knowledgeHeader').style.display='block';
-  document.getElementById('aboutMrE').style.display='none';
+
+  document.getElementById('knowledgeHeader').style.display = 'block';
+  document.getElementById('aboutMrE').style.display = 'none';
   document.getElementById('treeContents').innerHTML =
-      '<ol style="padding-left:1rem">'+
-      lines.map(l=>`<li>${l.replace(/^\d+\.\s*/,'')}</li>`).join('')+'</ol>';
-  totalNodes = lines.length;
-  progBar('⬜'.repeat(totalNodes), 0, totalNodes);
+    '<ol style="padding-left:1rem">' +
+    lines.map(l => `<li>${l.replace(/^\d+\.\s*/, '')}</li>`).join('') +
+    '</ol>';
+  progBar('⬜'.repeat(totalNodes), 0);
 }
 
-/* ---------- HANDLE ASSISTANT ---------- */
+/* ---------- HANDLE ASSISTANT (FIXED) ---------- */
 function handleAI(reply) {
-  // 1) Extract & strip out media URLs
+  // 1. Extract media
   let cleanReply = reply;
   const visuals = document.getElementById('visuals');
   visuals.innerHTML = '<h3>🔍 Topic visuals</h3>';
 
-  // Image extraction (supports "Image:" prefix)
-  const imgRegex = /(?:Image:\s*)?(https?:\/\/[^\s<>,]+\.(?:png|jpe?g|gif|svg))/gi;
+  // Improved regex for markdown-style images
+  const imgRegex = /(?:Image:\s*|!\[.*?\]\()(https?:\/\/[^\s<>)]+\.(?:png|jpe?g|gif|svg))/gi;
   const images = [];
-  let m;
-  while ((m = imgRegex.exec(reply)) !== null) {
-    images.push(m[1]);
-    cleanReply = cleanReply.replace(m[0], '');
+  let imgMatch;
+  while ((imgMatch = imgRegex.exec(reply)) {
+    images.push(imgMatch[1]);
+    cleanReply = cleanReply.replace(imgMatch[0], '');
   }
 
-  // YouTube extraction
-  const ytRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/watch\?v=)([\w-]+)(?:&\S*)?/gi;
+  const ytRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/watch\?v=)([\w-]+)/gi;
   const youtubeIDs = [];
-  let y;
-  while ((y = ytRegex.exec(reply)) !== null) {
-    youtubeIDs.push(y[1]);
-    cleanReply = cleanReply.replace(y[0], '');
+  let ytMatch;
+  while ((ytMatch = ytRegex.exec(reply)) {
+    youtubeIDs.push(ytMatch[1]);
+    cleanReply = cleanReply.replace(ytMatch[0], '');
   }
 
-  // 2) Clean residual markup
+  // 2. Clean residual markup
   cleanReply = cleanReply
     .replace(/(Image:|!\[.*?\]\()/gi, '')
     .replace(/\n\s*\n/g, '\n')
     .trim();
 
-  // 3) Show cleaned message
+  // 3. Render chat
   addMsg(cleanReply, 'assistant');
   speak(cleanReply);
 
-  // 4) Show first image
-  images.slice(0, 1).forEach(url => {
-    const img = document.createElement('img');
-    img.src = url;
+  // 4. Show first media (image priority)
+  if (images[0]) {
+    const img = new Image();
+    img.src = images[0];
     img.style.cssText = `
       width: 100%;
       max-height: 300px;
       object-fit: contain;
-      margin: 1rem 0;
       border-radius: 8px;
       border: 1px solid #e5e7eb;
+      margin: 1rem 0;
     `;
-    img.onerror = () => img.remove();
-    visuals.appendChild(img);
-  });
-
-  // 5) Show first YouTube video
-  youtubeIDs.slice(0, 1).forEach(id => {
-    const ifr = document.createElement('iframe');
-    ifr.src = `https://www.youtube.com/embed/${id}`;
-    ifr.style.cssText = `
+    img.onerror = () => visuals.append('⚠️ Image failed to load');
+    visuals.append(img);
+  } else if (youtubeIDs[0]) {
+    const iframe = document.createElement('iframe');
+    iframe.src = `https://www.youtube.com/embed/${youtubeIDs[0]}`;
+    iframe.style.cssText = `
       width: 100%;
       aspect-ratio: 16/9;
       border-radius: 8px;
       margin: 1rem 0;
       border: none;
     `;
-    ifr.allowFullscreen = true;
-    visuals.appendChild(ifr);
-  });
-
-  // Knowledge Tree
-  const idx = reply.indexOf('Knowledge Tree:');
-  if (idx !== -1) {
-    const treeText = reply.slice(idx).split('\n').slice(1).join('\n');
-    setTree(treeText);
+    iframe.allowFullscreen = true;
+    visuals.append(iframe);
   }
 
-  // Progress bar
-  const m = reply.match(/([🟢🟧⬜]{3,})/);
-  if (m) {
-    let state = m[1];
-    if (totalNodes && state.length < totalNodes) state = state.padEnd(totalNodes, '⬜');
-    const mastered = (state.match(/🟢/g) || []).length;
-    progBar(state, mastered, totalNodes || state.length);
+  // 5. Handle progress
+  const barMatch = reply.match(/([🟢🟧⬜]{3,})/);
+  if (barMatch) {
+    let state = barMatch[1];
+    state = totalNodes ? 
+      state.slice(0, totalNodes).padEnd(totalNodes, '⬜') : 
+      state;
+    progBar(state, (state.match(/🟢/g) || []).length);
   }
 
-  // Confetti
+  // 6. Handle knowledge tree
+  const treeIdx = reply.indexOf('Knowledge Tree:');
+  if (treeIdx !== -1) {
+    setTree(reply.slice(treeIdx).split('\n').slice(1).join('\n'));
+  }
+
   if (/You\s+MASTERED/i.test(reply)) confetti();
 }
+
 /* ---------- SEND ---------- */
-async function send(msg){
-  if(!student && /my name is (\w+)/i.test(msg))
-      student = msg.match(/my name is (\w+)/i)[1];
+async function send(msg) {
+  if (!student && /my name is (\w+)/i.test(msg)) {
+    student = msg.match(/my name is (\w+)/i)[1];
+  }
 
-  history.push({role:'user',content:msg});
-  addMsg(msg,'user');
+  history.push({ role: 'user', content: msg });
+  addMsg(msg, 'user');
 
-  thinking = addMsg('💭 Gov. is thinking...','assistant');
+  thinking = addMsg('💭 Gov. is thinking...', 'assistant');
 
-  try{
-    const res = await fetch('/api/chat',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({conversation:history})
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conversation: history })
     });
     const data = await res.json();
     let rep = data.message || '';
-    rep = rep.replace(/Do you understand\?.*?/gi,'Do you understand?');
+    rep = rep.replace(/Do you understand\?.*?/gi, 'Do you understand?');
 
-    history.push({role:'assistant',content:rep});
-    if(thinking){ thinking.remove(); thinking = null; }
+    history.push({ role: 'assistant', content: rep });
+    if (thinking) {
+      thinking.remove();
+      thinking = null;
+    }
     handleAI(rep);
-
-  }catch{
-    if(thinking){ thinking.remove(); thinking = null; }
-    addMsg('⚠️ Something went wrong','assistant');
+  } catch {
+    if (thinking) {
+      thinking.remove();
+      thinking = null;
+    }
+    addMsg('⚠️ Something went wrong', 'assistant');
   }
 }
 
-/* ---------- INIT ---------- */
-document.addEventListener('DOMContentLoaded',()=>{
-  setTimeout(()=>{
-    const intro="Welcome 🎉 What’s your name, grade, and what topic would you like to learn today?";
-    history.push({role:'assistant',content:intro});
-    addMsg(intro,'assistant');
-  },200);
-});
+/* ---------- INIT (FIXED) ---------- */
+function initChat() {
+  history = [];
+  student = '';
+  totalNodes = 0; // Reset for new sessions
+  chatBox.innerHTML = '';
+  document.getElementById('visuals').innerHTML = '<h3>🔍 Topic visuals</h3>';
+  document.getElementById('knowledgeHeader').style.display = 'none';
+  document.getElementById('aboutMrE').style.display = 'block';
+  document.getElementById('treeContents').innerHTML = '';
+  progBar('⬜', 0, 0);
+  
+  // Guaranteed welcome message
+  setTimeout(() => {
+    addMsg("Welcome 🎉 What’s your name, grade, and what topic would you like to learn today?", 'assistant');
+  }, 300);
+}
+
+document.addEventListener('DOMContentLoaded', initChat);
 
 /* ---------- EVENTS ---------- */
-form.onsubmit = e=>{
+form.onsubmit = e => {
   e.preventDefault();
-  if(input.value.trim()){
+  if (input.value.trim()) {
     send(input.value.trim());
-    input.value='';
+    input.value = '';
   }
 };
-input.onkeydown = e=>{
-  if(e.key==='Enter' && !e.shiftKey){
+
+input.onkeydown = e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
     form.requestSubmit();
   }
 };
-input.oninput = ()=>{
-  input.style.height='auto';
-  input.style.height = input.scrollHeight+'px';
-};
-clearBtn.onclick = ()=>{
-  history=[]; chatBox.innerHTML=''; student='';
-  document.dispatchEvent(new Event('DOMContentLoaded'));
+
+input.oninput = () => {
+  input.style.height = 'auto';
+  input.style.height = input.scrollHeight + 'px';
 };
 
-/* ---------- VOICE ---------- */
+clearBtn.onclick = initChat;
+
+/* ---------- VOICE (UNCHANGED) ---------- */
 const rec = 'webkitSpeechRecognition' in window ? new webkitSpeechRecognition() : null;
-if(rec){
-  rec.lang='en-NG';
-  micBtn.onclick=()=>{ rec.start(); micBtn.textContent='🎙️'; };
-  rec.onresult=e=>{
-    let t=''; for(let i=e.resultIndex;i<e.results.length;++i)
-      if(e.results[i].isFinal) t+=e.results[i][0].transcript;
-    if(t.trim()){ send(t.trim()); input.value=''; }
-    micBtn.textContent='🎤';
+if (rec) {
+  rec.lang = 'en-NG';
+  micBtn.onclick = () => {
+    rec.start();
+    micBtn.textContent = '🎙️';
   };
-  rec.onerror = rec.onend = ()=> micBtn.textContent='🎤';
-}else{
-  micBtn.disabled=true; micBtn.title='Voice unsupported';
+  rec.onresult = e => {
+    let transcript = '';
+    for (let i = e.resultIndex; i < e.results.length; ++i) {
+      if (e.results[i].isFinal) transcript += e.results[i][0].transcript;
+    }
+    if (transcript.trim()) {
+      send(transcript.trim());
+      input.value = '';
+    }
+    micBtn.textContent = '🎤';
+  };
+  rec.onerror = rec.onend = () => micBtn.textContent = '🎤';
+} else {
+  micBtn.disabled = true;
+  micBtn.title = 'Voice unsupported';
 }
 </script>
 </body>
