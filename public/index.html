@@ -31,7 +31,7 @@ main#wrapper{flex:1;display:flex;gap:.5rem;max-width:1200px;width:100%;
 aside,
 #visuals {
   width: 20%;
-  min-width: 180px;      /* <-- prevents it from vanishing */
+  min-width: 180px;
   background: #fff;
   border-radius: 16px;
   padding: 0.5rem;
@@ -40,17 +40,15 @@ aside,
   display: flex;
   flex-direction: column;
   min-height: 0;
+  overflow-y: auto; /* Corrected placement */
+  gap: 0.5rem;
 }
 
 #visuals h3 {
   margin-bottom: 0.3rem;
 }
-  overflow-y: auto; /* Add this line */
-  gap: 0.5rem;     /* Add this line */
-}
 
-/* Add these new rules below */
-#visuals img, 
+#visuals img,
 #visuals iframe {
   max-width: 100%;
   object-fit: contain;
