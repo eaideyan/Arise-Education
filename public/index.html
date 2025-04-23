@@ -206,56 +206,70 @@ function setTree(txt){
 
 /* ---------- HANDLE ASSISTANT ---------- */
 function handleAI(reply) {
-  // 1) Extract media first and clean the message
+  // 1) Extract & strip out media URLs
   let cleanReply = reply;
-  
-  // Extract image URLs
-  const imgUrls = [];
-  const imgMatches = reply.matchAll(/https?:\/\/\S+\.(?:png|jpe?g|gif)/gi);
-  for (const match of imgMatches) {
-    imgUrls.push(match[0]);
-    cleanReply = cleanReply.replace(match[0], '');
+  const visuals = document.getElementById('visuals');
+  visuals.innerHTML = '<h3>🔍 Topic visuals</h3>';
+
+  // Image extraction (supports "Image:" prefix)
+  const imgRegex = /(?:Image:\s*)?(https?:\/\/[^\s<>,]+\.(?:png|jpe?g|gif|svg))/gi;
+  const images = [];
+  let m;
+  while ((m = imgRegex.exec(reply)) !== null) {
+    images.push(m[1]);
+    cleanReply = cleanReply.replace(m[0], '');
   }
 
-  // Extract YouTube IDs
-  const ytIds = [];
-  const ytMatches = reply.matchAll(/youtu(?:be\.com\/watch\?v=|\.be\/)([\w-]+)/gi);
-  for (const match of ytMatches) {
-    ytIds.push(match[1]);
-    cleanReply = cleanReply.replace(match[0], '');
+  // YouTube extraction
+  const ytRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/watch\?v=)([\w-]+)(?:&\S*)?/gi;
+  const youtubeIDs = [];
+  let y;
+  while ((y = ytRegex.exec(reply)) !== null) {
+    youtubeIDs.push(y[1]);
+    cleanReply = cleanReply.replace(y[0], '');
   }
 
-  // Remove empty lines and trim
-  cleanReply = cleanReply.replace(/^\s*[\r\n]/gm, '').trim();
+  // 2) Clean residual markup
+  cleanReply = cleanReply
+    .replace(/(Image:|!\[.*?\]\()/gi, '')
+    .replace(/\n\s*\n/g, '\n')
+    .trim();
 
-  // 2) Show cleaned message in chat
+  // 3) Show cleaned message
   addMsg(cleanReply, 'assistant');
   speak(cleanReply);
 
-  // 3) Update visuals sidebar
-  const visuals = document.getElementById('visuals');
-  visuals.innerHTML = '<h3>🔍 Topic visuals</h3>';
-  
-  // Add images
-  imgUrls.forEach(url => {
+  // 4) Show first image
+  images.slice(0, 1).forEach(url => {
     const img = document.createElement('img');
     img.src = url;
-    img.style = 'width:100%;border-radius:8px;margin:8px 0;';
+    img.style.cssText = `
+      width: 100%;
+      max-height: 300px;
+      object-fit: contain;
+      margin: 1rem 0;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    `;
+    img.onerror = () => img.remove();
     visuals.appendChild(img);
   });
 
-  // Add YouTube embeds
-  ytIds.forEach(id => {
-    const frame = document.createElement('iframe');
-    frame.width = '100%';
-    frame.height = '200';
-    frame.src = `https://www.youtube.com/embed/${id}`;
-    frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-    frame.style = 'border-radius:8px;margin:8px 0;aspect-ratio:16/9;';
-    visuals.appendChild(frame);
+  // 5) Show first YouTube video
+  youtubeIDs.slice(0, 1).forEach(id => {
+    const ifr = document.createElement('iframe');
+    ifr.src = `https://www.youtube.com/embed/${id}`;
+    ifr.style.cssText = `
+      width: 100%;
+      aspect-ratio: 16/9;
+      border-radius: 8px;
+      margin: 1rem 0;
+      border: none;
+    `;
+    ifr.allowFullscreen = true;
+    visuals.appendChild(ifr);
   });
 
-  // ====== 3-5) Existing logic below (UNCHANGED) ======
   // Knowledge Tree
   const idx = reply.indexOf('Knowledge Tree:');
   if (idx !== -1) {
