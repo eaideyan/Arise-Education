@@ -258,76 +258,82 @@
     }
 
     /* ---------- HANDLE ASSISTANT ---------- */
-    function handleAI(reply) {
-      let clean = reply;
-      const visuals = document.getElementById('visuals');
-      visuals.innerHTML = '<h3>🔍 Topic visuals</h3>';
+function handleAI(reply) {
+  // 1) Prepare and clear visuals
+  let cleanReply = reply;
+  const visuals = document.getElementById('visuals');
+  visuals.innerHTML = '<h3>🔍 Topic visuals</h3>';
 
-      // Extract images
-      const imgRe = /(?:Image:\s*)?(https?:\/\/[^\s<>,]+\.(?:png|jpe?g|gif|svg))/gi;
-      const imgs = [];
-      let m;
-      while ((m = imgRe.exec(reply)) !== null) {
-        imgs.push(m[1]);
-        clean = clean.replace(m[0], '');
-      }
+  // 2) Extract images (supports markdown and "Image:" prefix)
+  const imgRegex = /(?:Image:\s*|!\[.*?\]\()\s*(https?:\/\/\S+\.(?:png|jpe?g|gif|svg))/,
+        images = [],
+        imgMatches = reply.matchAll(/(?:Image:\s*|!\[.*?\]\()\s*(https?:\/\/\S+\.(?:png|jpe?g|gif|svg))/gi);
+  for (const m of imgMatches) {
+    images.push(m[1]);
+    cleanReply = cleanReply.replace(m[0], '');
+  }
 
-      // Extract YouTube
-      const ytRe = /(?:youtu\.be\/|youtube\.com\/watch\?v=)([\w-]+)/gi;
-      const vids = [];
-      let y;
-      while ((y = ytRe.exec(reply)) !== null) {
-        vids.push(y[1]);
-        clean = clean.replace(y[0], '');
-      }
+  // 3) Extract YouTube IDs
+  const ytRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/watch\?v=)([\w-]+)/gi,
+        youtubeIDs = [];
+  let yt;
+  while ((yt = ytRegex.exec(reply)) !== null) {
+    youtubeIDs.push(yt[1]);
+    cleanReply = cleanReply.replace(yt[0], '');
+  }
 
-      // Clean up blank lines
-      clean = clean.replace(/\n\s*\n/g, '\n').trim();
+  // 4) Clean up leftover markup
+  cleanReply = cleanReply
+    .replace(/(?:Image:|!\[.*?\]\()/gi, '')
+    .replace(/\n\s*\n/g, '\n')
+    .trim();
 
-      // Render chat
-      addMsg(clean, 'assistant');
-      speak(clean);
+  // 5) Render assistant message
+  addMsg(cleanReply, 'assistant');
+  speak(cleanReply);
 
-      // Sidebar visuals: show first image or first video
-      if (imgs[0]) {
-        const img = document.createElement('img');
-        img.src = imgs[0];
-        img.style.cssText = `
-          width:100%; max-height:300px; object-fit:contain;
-          border-radius:8px; margin:1rem 0; border:1px solid #e5e7eb;
-        `;
-        img.onerror = () => visuals.append('⚠️ Image failed');
-        visuals.append(img);
-      }
-      else if (vids[0]) {
-        const ifr = document.createElement('iframe');
-        ifr.src = `https://www.youtube.com/embed/${vids[0]}`;
-        ifr.style.cssText = `
-          width:100%; aspect-ratio:16/9; border-radius:8px;
-          margin:1rem 0; border:none;
-        `;
-        ifr.allowFullscreen = true;
-        visuals.append(ifr);
-      }
+  // 6) Render first image if present
+  if (images.length) {
+    const img = document.createElement('img');
+    img.src = images[0];
+    img.style.cssText = `width:100%; max-height:300px; object-fit:contain; margin:1rem 0; border-radius:8px; border:1px solid #e5e7eb;`;
+    img.onerror = () => img.remove();
+    visuals.appendChild(img);
+  }
 
-      // Progress bar inside chat bubble
-      const pb = reply.match(/([🟢🟧⬜]{3,})/);
-      if (pb) {
-        let st = pb[1];
-        if (totalNodes && st.length < totalNodes)
-          st = st.padEnd(totalNodes, '⬜');
-        progBar(st, (st.match(/🟢/g)||[]).length, totalNodes || st.length);
-      }
+  // 7) Render first YouTube embed if present
+  else if (youtubeIDs.length) {
+    const frame = document.createElement('iframe');
+    frame.src = `https://www.youtube.com/embed/${youtubeIDs[0]}`;
+    frame.style.cssText = `width:100%; aspect-ratio:16/9; margin:1rem 0; border-radius:8px; border:none;`;
+    frame.allowFullscreen = true;
+    visuals.appendChild(frame);
+  }
 
-      // Knowledge tree
-      const idx = reply.indexOf('Knowledge Tree:');
-      if (idx !== -1) {
-        setTree(reply.slice(idx).split('\n').slice(1).join('\n'));
-      }
+  // 8) Update Knowledge Tree if provided
+  const treeIdx = reply.indexOf('Knowledge Tree:');
+  if (treeIdx !== -1) {
+    const treeText = reply.slice(treeIdx).split('\n').slice(1).join('\n');
+    setTree(treeText);
+  }
 
-      // Confetti
-      if (/You\s+MASTERED/i.test(reply)) confetti();
+  // 9) Update Progress Bar
+  const barMatch = reply.match(/([🟢🟧⬜]+)/);
+  if (barMatch) {
+    let state = barMatch[1];
+    if (totalNodes && state.length < totalNodes) {
+      state = state.padEnd(totalNodes, '⬜');
     }
+    const mastered = (state.match(/🟢/g) || []).length;
+    progBar(state, mastered, totalNodes || state.length);
+  }
+
+  // 10) Celebrate final mastery
+  if (/You\s+MASTERED/i.test(reply)) {
+    confetti();
+  }
+}
+
 
     /* ---------- SEND ---------- */
     async function send(msg) {
