@@ -232,6 +232,23 @@
       document.body.append(d);
       setTimeout(() => d.remove(), 1300);
     }
+    // ← HERE: define updateProgress immediately after confetti
+function updateProgress(done = 0, total = 0) {
+  const filled = '🟢'.repeat(done);
+  const empty  = '⬜'.repeat(Math.max(total - done, 0));
+  const state  = filled + empty;
+
+  document.getElementById('progressVisual').textContent =
+    `🧠 Progress: ${state} (${done}/${total} mastered!)`;
+  document.getElementById('progressFeedback').textContent =
+    done === 0 ? "Let's begin! 🚀"
+  : done === total ? "Woohoo 🎉 Topic mastered!"
+  : "Great job! Keep going 🌟";
+
+  // (optional) echo into chat bubble too:
+  // if (total>0) addMsg(`🧠 Progress: ${state} (${done}/${total} mastered!)`, 'assistant');
+}
+
 
     /* ---------- PROGRESS BAR ---------- */
     function progBar(state = '⬜', done = 0, total = totalNodes) {
@@ -329,18 +346,21 @@ function handleAI(reply) {
     setTree(treeText);
   }
 
-  // 9) NEW: Unified progress parsing & rendering
-  //    Count green squares and rebuild the bar with our fixed denominator
-  const done = (reply.match(/🟢/g) || []).length;
-  const state = '🟢'.repeat(done) + '⬜'.repeat(totalNodes - done);
-  progBar(state, done, totalNodes);
+// 9) unify parsing + display
+const m = reply.match(
+  /🧠\s*Progress:\s*[🟢🟧⬜]+\s*\((\d+)\/(\d+)\s*mastered!/i
+);
+if (m) {
+  const done  = parseInt(m[1], 10);
+  const total = parseInt(m[2], 10);
+  totalNodes = total;
+  updateProgress(done, total);
+}
 
-  // 10) Celebrate final mastery
-  if (/You\s+MASTERED/i.test(reply)) {
-    confetti();
-  }
-} // end handleAI
-
+// 10) celebrate
+if (/You\s+MASTERED/i.test(reply)) {
+  confetti();
+}
 
     /* ---------- SEND ---------- */
     async function send(msg) {
