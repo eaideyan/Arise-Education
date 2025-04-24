@@ -329,31 +329,17 @@ function handleAI(reply) {
     setTree(treeText);
   }
 
-  // 9) **Precisely parse the AI’s own Progress line**
-  const progMatch = reply.match(
-    /🧠\s*Progress:\s*([🟢🟧⬜]+)\s*\((\d+)\/(\d+)\s*mastered!/i
-  );
-  if (progMatch) {
-    let [, state, doneStr, totalStr] = progMatch;
-    const done  = parseInt(doneStr,  10);
-    const total = parseInt(totalStr, 10);
-
-    // ensure our glyph‐string length matches total
-    if (state.length < total)  state = state.padEnd(total, '⬜');
-    else if (state.length > total) state = state.slice(0, total);
-
-    // lock global denominator
-    totalNodes = total;
-
-    // render both sidebar & bubble from the same values
-    progBar(state, done, total);
-  }
+  // 9) NEW: Unified progress parsing & rendering
+  //    Count green squares and rebuild the bar with our fixed denominator
+  const done = (reply.match(/🟢/g) || []).length;
+  const state = '🟢'.repeat(done) + '⬜'.repeat(totalNodes - done);
+  progBar(state, done, totalNodes);
 
   // 10) Celebrate final mastery
   if (/You\s+MASTERED/i.test(reply)) {
     confetti();
   }
-}
+} // end handleAI
 
 
     /* ---------- SEND ---------- */
