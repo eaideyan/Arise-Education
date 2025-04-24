@@ -346,20 +346,30 @@ function handleAI(reply) {
     setTree(treeText);
   }
 
-// 9) unify parsing + display
-const m = reply.match(
-  /🧠\s*Progress:\s*[🟢🟧⬜]+\s*\((\d+)\/(\d+)\s*mastered!/i
-);
-if (m) {
-  const done  = parseInt(m[1], 10);
-  const total = parseInt(m[2], 10);
-  totalNodes = total;
-  updateProgress(done, total);
-}
+  // 9) **Precisely parse the AI’s own Progress line**
+  const progMatch = reply.match(
+    /🧠\s*Progress:\s*([🟢🟧⬜]+)\s*\((\d+)\/(\d+)\s*mastered!/i
+  );
+  if (progMatch) {
+    let [, state, doneStr, totalStr] = progMatch;
+    const done  = parseInt(doneStr,  10);
+    const total = parseInt(totalStr, 10);
 
-// 10) celebrate
-if (/You\s+MASTERED/i.test(reply)) {
-  confetti();
+    // ensure our glyph‐string length matches total
+    if (state.length < total)  state = state.padEnd(total, '⬜');
+    else if (state.length > total) state = state.slice(0, total);
+
+    // lock global denominator
+    totalNodes = total;
+
+    // render both sidebar & bubble from the same values
+    progBar(state, done, total);
+  }
+
+  // 10) Celebrate final mastery
+  if (/You\s+MASTERED/i.test(reply)) {
+    confetti();
+  }
 }
 
     /* ---------- SEND ---------- */
