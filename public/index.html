@@ -329,31 +329,24 @@ function handleAI(reply) {
     setTree(treeText);
   }
 
-    // 9) Update Progress Bar (robust to missing “(x/y mastered!)”)
-  {
-    // grab the circle‐string
-    const barOnly = reply.match(/🧠\s*Progress:\s*([🟢🟧⬜]+)/i);
-    if (barOnly) {
-      let state = barOnly[1];
-      // count greens
-      let done = (state.match(/🟢/g) || []).length;
-      // default total = number of circles
-      let total = state.length;
+  // 9) **Precisely parse the AI’s own Progress line**
+  const progMatch = reply.match(
+    /🧠\s*Progress:\s*([🟢🟧⬜]+)\s*\((\d+)\/(\d+)\s*mastered!/i
+  );
+  if (progMatch) {
+    let [, state, doneStr, totalStr] = progMatch;
+    const done  = parseInt(doneStr,  10);
+    const total = parseInt(totalStr, 10);
 
-      // if the AI actually wrote “(x/y mastered!)”, grab those too
-      const denom = reply.match(/\((\d+)\/(\d+)\s*mastered/i);
-      if (denom) {
-        done  = parseInt(denom[1], 10);
-        total = parseInt(denom[2], 10);
-        // pad or trim the state string to match that total
-        if      (state.length < total) state = state.padEnd(total, '⬜');
-        else if (state.length > total) state = state.slice(0, total);
-      }
+    // ensure our glyph‐string length matches total
+    if (state.length < total)  state = state.padEnd(total, '⬜');
+    else if (state.length > total) state = state.slice(0, total);
 
-      // lock in our denominator globally
-      totalNodes = total;
-      progBar(state, done, total);
-    }
+    // lock global denominator
+    totalNodes = total;
+
+    // render both sidebar & bubble from the same values
+    progBar(state, done, total);
   }
 
   // 10) Celebrate final mastery
@@ -361,6 +354,7 @@ function handleAI(reply) {
     confetti();
   }
 }
+
 
     /* ---------- SEND ---------- */
     async function send(msg) {
