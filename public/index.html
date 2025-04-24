@@ -329,7 +329,7 @@ function handleAI(reply) {
     setTree(treeText);
   }
 
-  // 9) Update Progress Bar (robust to missing “(x/y mastered!)”)
+    // 9) Update Progress Bar (robust to missing “(x/y mastered!)”)
   {
     // grab the circle‐string
     const barOnly = reply.match(/🧠\s*Progress:\s*([🟢🟧⬜]+)/i);
@@ -355,6 +355,12 @@ function handleAI(reply) {
       progBar(state, done, total);
     }
   }
+
+  // 10) Celebrate final mastery
+  if (/You\s+MASTERED/i.test(reply)) {
+    confetti();
+  }
+}
 
     /* ---------- SEND ---------- */
     async function send(msg) {
