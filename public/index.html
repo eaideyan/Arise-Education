@@ -259,25 +259,22 @@
 
     /* ---------- HANDLE ASSISTANT ---------- */
 function handleAI(reply) {
-  // 1) Prepare and clear visuals
-  let cleanReply = reply;
+  // 1) Clear and prepare visuals sidebar
   const visuals = document.getElementById('visuals');
   visuals.innerHTML = '<h3>🔍 Topic visuals</h3>';
+  let cleanReply = reply;
 
-  // 2) Extract images (supports markdown and "Image:" prefix)
-  const imgRegex = /(?:Image:\s*|!\[.*?\]\()\s*(https?:\/\/\S+\.(?:png|jpe?g|gif|svg))/,
-        images = [],
-        imgMatches = reply.matchAll(/(?:Image:\s*|!\[.*?\]\()\s*(https?:\/\/\S+\.(?:png|jpe?g|gif|svg))/gi);
-  for (const m of imgMatches) {
+  // 2) Extract images (markdown or "Image:" prefixed)
+  const images = [];
+  for (const m of reply.matchAll(/(?:Image:\s*|!\[.*?\]\()\s*(https?:\/\/\S+\.(?:png|jpe?g|gif|svg))/gi)) {
     images.push(m[1]);
     cleanReply = cleanReply.replace(m[0], '');
   }
 
   // 3) Extract YouTube IDs
-  const ytRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/watch\?v=)([\w-]+)/gi,
-        youtubeIDs = [];
+  const youtubeIDs = [];
   let yt;
-  while ((yt = ytRegex.exec(reply)) !== null) {
+  while ((yt = /(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/watch\?v=)([\w-]+)/gi.exec(reply)) !== null) {
     youtubeIDs.push(yt[1]);
     cleanReply = cleanReply.replace(yt[0], '');
   }
@@ -288,44 +285,68 @@ function handleAI(reply) {
     .replace(/\n\s*\n/g, '\n')
     .trim();
 
-  // 5) Render assistant message
+  // 5) Render the assistant bubble & speak
   addMsg(cleanReply, 'assistant');
   speak(cleanReply);
 
-  // 6) Render first image if present
+  // 6) Show the first image, if any
   if (images.length) {
     const img = document.createElement('img');
     img.src = images[0];
-    img.style.cssText = `width:100%; max-height:300px; object-fit:contain; margin:1rem 0; border-radius:8px; border:1px solid #e5e7eb;`;
+    img.style.cssText = `
+      width: 100%;
+      max-height: 300px;
+      object-fit: contain;
+      margin: 1rem 0;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    `;
     img.onerror = () => img.remove();
     visuals.appendChild(img);
   }
-
-  // 7) Render first YouTube embed if present
+  // 7) Otherwise show the first YouTube embed
   else if (youtubeIDs.length) {
-    const frame = document.createElement('iframe');
-    frame.src = `https://www.youtube.com/embed/${youtubeIDs[0]}`;
-    frame.style.cssText = `width:100%; aspect-ratio:16/9; margin:1rem 0; border-radius:8px; border:none;`;
-    frame.allowFullscreen = true;
-    visuals.appendChild(frame);
+    const iframe = document.createElement('iframe');
+    iframe.src = `https://www.youtube.com/embed/${youtubeIDs[0]}`;
+    iframe.style.cssText = `
+      width: 100%;
+      aspect-ratio: 16/9;
+      margin: 1rem 0;
+      border-radius: 8px;
+      border: none;
+    `;
+    iframe.allowFullscreen = true;
+    visuals.appendChild(iframe);
   }
 
-  // 8) Update Knowledge Tree if provided
+  // 8) Update the knowledge tree if present
   const treeIdx = reply.indexOf('Knowledge Tree:');
   if (treeIdx !== -1) {
-    const treeText = reply.slice(treeIdx).split('\n').slice(1).join('\n');
+    const treeText = reply.slice(treeIdx)
+      .split('\n')
+      .slice(1)
+      .join('\n');
     setTree(treeText);
   }
 
-  // 9) Update Progress Bar
-  const barMatch = reply.match(/([🟢🟧⬜]+)/);
-  if (barMatch) {
-    let state = barMatch[1];
-    if (totalNodes && state.length < totalNodes) {
-      state = state.padEnd(totalNodes, '⬜');
-    }
-    const mastered = (state.match(/🟢/g) || []).length;
-    progBar(state, mastered, totalNodes || state.length);
+  // 9) **Precisely parse the AI’s own Progress line**
+  const progMatch = reply.match(
+    /🧠\s*Progress:\s*([🟢🟧⬜]+)\s*\((\d+)\/(\d+)\s*mastered!/i
+  );
+  if (progMatch) {
+    let [, state, doneStr, totalStr] = progMatch;
+    const done  = parseInt(doneStr,  10);
+    const total = parseInt(totalStr, 10);
+
+    // ensure our glyph‐string length matches total
+    if (state.length < total)  state = state.padEnd(total, '⬜');
+    else if (state.length > total) state = state.slice(0, total);
+
+    // lock global denominator
+    totalNodes = total;
+
+    // render both sidebar & bubble from the same values
+    progBar(state, done, total);
   }
 
   // 10) Celebrate final mastery
