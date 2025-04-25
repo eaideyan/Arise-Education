@@ -291,12 +291,14 @@ function handleAI(reply) {
   visuals.innerHTML = '<h3>🔍 Topic visuals</h3>';
   let cleanReply = reply;
 
-  // 2) Extract images (markdown or "Image:" prefixed)
-  const images = [];
-  for (const m of reply.matchAll(/(?:Image:\s*|!\[.*?\]\()\s*(https?:\/\/\S+\.(?:png|jpe?g|gif|svg))/gi)) {
-    images.push(m[1]);
-    cleanReply = cleanReply.replace(m[0], '');
-  }
+// 2) Extract any image URLs (with optional query-strings)
+const images = [];
+// match “Image: <url>” *or* raw URLs ending in .png/.jpg/.gif/.svg plus any ?params
+const imgPattern = /(?:Image:\s*)?(https?:\/\/\S+\.(?:png|jpe?g|gif|svg)(?:\?\S*)?)/gi;
+cleanReply = cleanReply.replace(imgPattern, (fullMatch, url) => {
+  images.push(url);
+  return '';      // strip it out of the bubble text
+});
 
   // 3) Extract YouTube IDs
   const youtubeIDs = [];
