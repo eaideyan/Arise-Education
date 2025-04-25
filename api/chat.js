@@ -98,7 +98,6 @@ Emit on pause/exit:
 
 - When a concept would benefit from a picture or short video, please always include
 - A single direct image URL. Be sure its a valid link
-If you include an image, you must start the line with exactly** `Image: ` **followed by a full HTTP(S) URL ending in `.png`, `.jpg`, `.gif`, or `.svg` (you may include query-params).
 example Format:
 Image: https://…example.png
 Video: https://www.youtube.com/watch?v=abc123XYZ
