@@ -261,18 +261,23 @@ function updateProgress(done = 0, total = 0) {
     }
 
     /* ---------- KNOWLEDGE TREE ---------- */
-    function setTree(txt) {
-      const lines = txt.split('\n').filter(l => /^\d+\./.test(l));
-      if (!lines.length) return;
-      if (totalNodes === 0) totalNodes = lines.length;
-      document.getElementById('knowledgeHeader').style.display = 'block';
-      document.getElementById('aboutMrE').style.display = 'none';
-      document.getElementById('treeContents').innerHTML =
-        '<ol style="padding-left:1rem">' +
-        lines.map(l=>`<li>${l.replace(/^\d+\.\s*/,'')}</li>`).join('') +
-        '</ol>';
-      progBar('⬜'.repeat(totalNodes), 0, totalNodes);
-    }
+function setTree(txt) {
+  const lines = txt.split('\n').filter(l => /^\d+\./.test(l));
+  if (!lines.length) return;
+
+  // ← reset every time
+  totalNodes = lines.length;
+
+  document.getElementById('knowledgeHeader').style.display = 'block';
+  document.getElementById('aboutMrE').style.display = 'none';
+  document.getElementById('treeContents').innerHTML =
+    '<ol style="padding-left:1rem">' +
+      lines.map(l=>`<li>${l.replace(/^\d+\.\s*/,'')}</li>`).join('') +
+    '</ol>';
+
+  // draw an empty bar for the new topic
+  updateProgress(0, totalNodes);
+}
 
     /* ---------- HANDLE ASSISTANT ---------- */
 function handleAI(reply) {
