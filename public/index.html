@@ -291,20 +291,13 @@ function handleAI(reply) {
   visuals.innerHTML = '<h3>🔍 Topic visuals</h3>';
   let cleanReply = reply;
 
-// 2) Safely extract any image URLs
-let images = [];
-try {
-  const imgPattern = /(?:Image:\s*)?(https?:\/\/\S+\.(?:png|jpe?g|gif|svg)(?:\?\S*)?)/gi;
-  cleanReply = cleanReply.replace(imgPattern, (fullMatch, url) => {
-    images.push(url);
-    return '';
-  });
-} catch (imgErr) {
-  console.error('Image‐extraction regex failed:', imgErr);
-  images = [];  // fallback: no images
-}
-
-
+// 2) Extract any image URLs (with optional query-strings)
+const images = [];
+const imgPattern = /(?:Image:\s*)?(https?:\/\/\S+\.(?:png|jpe?g|gif|svg)(?:\?\S*)?)/gi;
+cleanReply = cleanReply.replace(imgPattern, (fullMatch, url) => {
+  images.push(url);
+  return '';
+});
 
   // 3) Extract YouTube IDs
   const youtubeIDs = [];
