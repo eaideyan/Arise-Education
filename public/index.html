@@ -346,25 +346,29 @@ function handleAI(reply) {
     setTree(treeText);
   }
 
-  // 9) **Precisely parse the AI’s own Progress line**
-  const progMatch = reply.match(
-    /🧠\s*Progress:\s*([🟢🟧⬜]+)\s*\((\d+)\/(\d+)\s*mastered!/i
-  );
-  if (progMatch) {
-    let [, state, doneStr, totalStr] = progMatch;
-    const done  = parseInt(doneStr,  10);
-    const total = parseInt(totalStr, 10);
+ // 9) Parse Progress updates with robust fallbacks
+const progMatch = reply.match(
+  /🧠\s*Progress:\s*([🟢🟧⬜]+)\s*(?:\((\d+)\/(\d+)\))?/i
+);
 
-    // ensure our glyph‐string length matches total
-    if (state.length < total)  state = state.padEnd(total, '⬜');
-    else if (state.length > total) state = state.slice(0, total);
+if (progMatch) {
+  let [, state, doneStr, totalStr] = progMatch;
 
-    // lock global denominator
-    totalNodes = total;
+  // 1. Calculate progress with emoji fallback
+  const done = doneStr ? parseInt(doneStr, 10) 
+                       : (state.match(/🟢/g) || []).length;
+  const total = totalStr ? parseInt(totalStr, 10)
+                         : state.length;
 
-    // render both sidebar & bubble from the same values
-    progBar(state, done, total);
-  }
+  // 2. Normalize state length
+  state = state.slice(0, total).padEnd(total, '⬜');
+
+  // 3. Lock totalNodes to AI's stated total
+  totalNodes = total;
+
+  // 4. Single update path using updateProgress()
+  updateProgress(done, total);
+}
 
   // 10) Celebrate final mastery
   if (/You\s+MASTERED/i.test(reply)) {
@@ -373,34 +377,56 @@ function handleAI(reply) {
 }
 
     /* ---------- SEND ---------- */
-    async function send(msg) {
-      if (!student && /my name is (\w+)/i.test(msg))
-        student = msg.match(/my name is (\w+)/i)[1];
+async function send(msg) {
+  // 1) Capture student name if not already set
+  if (!student && /my name is (\w+)/i.test(msg)) {
+    student = msg.match(/my name is (\w+)/i)[1];
+  }
 
-      history.push({ role: 'user', content: msg });
-      addMsg(msg, 'user');
+  // 2) Render the user’s message
+  history.push({ role: 'user', content: msg });
+  addMsg(msg, 'user');
 
-      thinking = addMsg('💭 Gov. is thinking...', 'assistant');
+  // 3) Show “thinking” indicator
+  thinking = addMsg('💭 Gov. is thinking...', 'assistant');
 
-      try {
-        const res = await fetch('/api/chat', {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ conversation: history })
-        });
-        const j = await res.json();
-        let rep = j.message || '';
-        rep = rep.replace(/Do you understand\?.*?/gi, 'Do you understand?');
-
-        history.push({ role: 'assistant', content: rep });
-        if (thinking) { thinking.remove(); thinking = null; }
-        handleAI(rep);
-      }
-      catch {
-        if (thinking) { thinking.remove(); thinking = null; }
-        addMsg('⚠️ Something went wrong', 'assistant');
-      }
+  // ─── First try/catch: Only around the network call ───────────────────────────
+  let data;
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conversation: history }),
+    });
+    if (!res.ok) {
+      throw new Error(`API error ${res.status}: ${res.statusText}`);
     }
+    data = await res.json();
+  } catch (networkErr) {
+    console.error('Network/JSON error in send():', networkErr);
+    if (thinking) { thinking.remove(); thinking = null; }
+    addMsg('⚠️ Something went wrong', 'assistant');
+    return;  // stop further processing on real API failures
+  }
+
+  // 4) Remove the “thinking” bubble
+  if (thinking) { thinking.remove(); thinking = null; }
+
+  // 5) Prepare the assistant’s reply
+  let rep = data.message || '';
+  rep = rep.replace(/Do you understand\?.*?/gi, 'Do you understand?');
+
+  history.push({ role: 'assistant', content: rep });
+
+  // ─── Second try/catch: Only around UI rendering ─────────────────────────────
+  try {
+    handleAI(rep);
+  } catch (uiErr) {
+    console.error('UI error in handleAI():', uiErr);
+    // no banner shown—just log it for debugging
+  }
+}
+
 
     /* ---------- INIT ---------- */
     function initChat() {
